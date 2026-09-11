@@ -830,7 +830,290 @@ function renderFactors(
     }
   );
 }
+/* =========================================
+   SCORE METHODOLOGY
+   ========================================= */
 
+function hideMethodology() {
+  const card =
+    document.getElementById(
+      "methodologyCard"
+    );
+
+
+  if (card) {
+    card.hidden =
+      true;
+  }
+}
+
+
+function renderMethodology(
+  analysis,
+  scoring
+) {
+  const card =
+    document.getElementById(
+      "methodologyCard"
+    );
+
+  const rows =
+    document.getElementById(
+      "methodologyRows"
+    );
+
+
+  if (
+    !card ||
+    !rows
+  ) {
+    return;
+  }
+
+
+  const factors =
+    analysis?.factors ??
+    {};
+
+  const weights =
+    scoring
+      ?.methodology
+      ?.overallWeights ??
+    {};
+
+
+  const entries =
+    Object.entries(
+      FACTOR_LABELS
+    )
+      .map(
+        ([key, label]) => {
+          const score =
+            Number(
+              factors?.[key]
+            );
+
+          const weight =
+            Number(
+              weights?.[key]
+            );
+
+
+          if (
+            !Number.isFinite(score) ||
+            !Number.isFinite(weight)
+          ) {
+            return null;
+          }
+
+
+          return {
+            key,
+            label,
+            score,
+            weight,
+
+            contribution:
+              (
+                score *
+                weight
+              ) /
+              100
+          };
+        }
+      )
+      .filter(Boolean);
+
+
+  if (
+    entries.length === 0
+  ) {
+    hideMethodology();
+
+    return;
+  }
+
+
+  rows.replaceChildren();
+
+
+  let weightedScore =
+    0;
+
+
+  entries.forEach(
+    ({
+      label,
+      score,
+      weight,
+      contribution
+    }) => {
+      weightedScore +=
+        contribution;
+
+
+      const row =
+        createElement(
+          "div",
+          "methodology-row"
+        );
+
+
+      row.setAttribute(
+        "role",
+        "row"
+      );
+
+
+      const nameElement =
+        createElement(
+          "span",
+          "methodology-factor-name",
+          label
+        );
+
+
+      nameElement.setAttribute(
+        "role",
+        "cell"
+      );
+
+
+      const scoreElement =
+        createElement(
+          "span",
+          "methodology-factor-score",
+          String(
+            Math.round(
+              score
+            )
+          )
+        );
+
+
+      scoreElement.setAttribute(
+        "role",
+        "cell"
+      );
+
+
+      const weightElement =
+        createElement(
+          "span",
+          "methodology-factor-weight",
+          `${weight}%`
+        );
+
+
+      weightElement.setAttribute(
+        "role",
+        "cell"
+      );
+
+
+      const contributionElement =
+        createElement(
+          "span",
+          "methodology-factor-contribution",
+          `+${contribution.toFixed(2)}`
+        );
+
+
+      contributionElement.setAttribute(
+        "role",
+        "cell"
+      );
+
+
+      row.append(
+        nameElement,
+        scoreElement,
+        weightElement,
+        contributionElement
+      );
+
+
+      rows.appendChild(
+        row
+      );
+    }
+  );
+
+
+  const methodologyScore =
+    document.getElementById(
+      "methodologyScore"
+    );
+
+  const methodologyVersion =
+    document.getElementById(
+      "methodologyVersion"
+    );
+
+  const weightedScoreElement =
+    document.getElementById(
+      "weightedScore"
+    );
+
+  const finalScoreElement =
+    document.getElementById(
+      "finalScore"
+    );
+
+  const methodologyNote =
+    document.getElementById(
+      "methodologyNote"
+    );
+
+
+  if (methodologyScore) {
+    methodologyScore.textContent =
+      String(
+        analysis?.score ??
+        "—"
+      );
+  }
+
+
+  if (methodologyVersion) {
+    methodologyVersion.textContent =
+      analysis
+        ?.scoringVersion ??
+      "Deterministic";
+  }
+
+
+  if (weightedScoreElement) {
+    weightedScoreElement.textContent =
+      weightedScore.toFixed(
+        2
+      );
+  }
+
+
+  if (finalScoreElement) {
+    finalScoreElement.textContent =
+      String(
+        analysis?.score ??
+        "—"
+      );
+  }
+
+
+  if (
+    methodologyNote &&
+    scoring
+      ?.methodology
+      ?.note
+  ) {
+    methodologyNote.textContent =
+      scoring.methodology.note;
+  }
+
+
+  card.hidden =
+    false;
+}
 
 /* =========================================
    SCORE RING
