@@ -1741,6 +1741,7 @@ function renderAnalysisUnavailable() {
     null
   );
   hideMethodology();
+  hideFactorDetails();
 }
 
 
