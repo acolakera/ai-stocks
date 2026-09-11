@@ -150,7 +150,12 @@ export async function getFundamentals(
 /* =========================================
    AI ANALYSIS API
    ========================================= */
-
+const CLIENT_VERSION =
+  new URL(
+    import.meta.url
+  ).searchParams.get(
+    "v"
+  ) ?? "1";
 export async function getAnalysis(
   ticker
 ) {
@@ -167,8 +172,8 @@ export async function getAnalysis(
   }
 
 
- const url =
-  `/api/analysis?symbol=${encodeURIComponent(symbol)}&client=v6`;
+const url =
+  `/api/analysis?symbol=${encodeURIComponent(symbol)}&client=${encodeURIComponent(CLIENT_VERSION)}`;
 
 
   const response =
