@@ -3,34 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <meta
     name="description"
-    content="AI-powered stock analysis platform"
+    content="AI-powered stock research and equity analysis platform."
   />
+
+  <meta name="theme-color" content="#07090d" />
 
   <title>AI Stocks</title>
 
   <style>
     :root {
       --bg: #07090d;
-      --bg-soft: #0b0e14;
-      --card: rgba(255, 255, 255, 0.045);
-      --card-hover: rgba(255, 255, 255, 0.065);
-      --border: rgba(255, 255, 255, 0.09);
+      --bg-elevated: #0a0d12;
+      --surface: rgba(255, 255, 255, 0.035);
+      --surface-hover: rgba(255, 255, 255, 0.05);
+
+      --border: rgba(255, 255, 255, 0.075);
+      --border-strong: rgba(255, 255, 255, 0.12);
 
       --text: #f4f7fb;
-      --muted: #8c96a8;
+      --text-soft: #c6cbd4;
+      --muted: #7e8798;
+      --muted-2: #596170;
 
-      --green: #42e6a4;
-      --green-soft: rgba(66, 230, 164, 0.12);
+      --positive: #5de5aa;
+      --positive-soft: rgba(93, 229, 170, 0.1);
 
-      --red: #ff6b7a;
-      --red-soft: rgba(255, 107, 122, 0.12);
+      --negative: #ff7183;
+      --negative-soft: rgba(255, 113, 131, 0.1);
 
-      --blue: #6ea8fe;
+      --neutral: #a8b2c1;
 
-      --radius: 18px;
-      --max-width: 1440px;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+
+      --container: 1380px;
     }
 
     * {
@@ -41,28 +51,33 @@
 
     html {
       scroll-behavior: smooth;
+      background: var(--bg);
     }
 
     body {
       min-height: 100vh;
+      color: var(--text);
       background:
         radial-gradient(
-          circle at 50% -10%,
-          rgba(66, 230, 164, 0.07),
+          circle at 50% -20%,
+          rgba(93, 229, 170, 0.055),
           transparent 34%
         ),
         var(--bg);
 
-      color: var(--text);
-
       font-family:
         Inter,
+        ui-sans-serif,
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
 
+      font-size: 15px;
       line-height: 1.5;
+
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     button,
@@ -74,366 +89,312 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      cursor: default;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
     .container {
-      width: min(calc(100% - 40px), var(--max-width));
+      width: min(calc(100% - 40px), var(--container));
       margin: 0 auto;
     }
 
-    /* HEADER */
+    /* =========================
+       HEADER
+       ========================= */
 
-    header {
+    .site-header {
       position: sticky;
       top: 0;
       z-index: 100;
 
-      background: rgba(7, 9, 13, 0.82);
-      backdrop-filter: blur(20px);
-
       border-bottom: 1px solid var(--border);
+
+      background: rgba(7, 9, 13, 0.86);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
     }
 
-    .navbar {
-      height: 72px;
+    .nav-shell {
+      min-height: 68px;
 
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
 
-      gap: 24px;
+      gap: 28px;
     }
 
     .brand {
-      display: flex;
+      justify-self: start;
+
+      display: inline-flex;
       align-items: center;
+
       gap: 10px;
 
       font-weight: 700;
       letter-spacing: -0.03em;
-      font-size: 19px;
     }
 
     .brand-mark {
-      width: 32px;
-      height: 32px;
-
-      border-radius: 9px;
+      width: 31px;
+      height: 31px;
 
       display: grid;
       place-items: center;
 
-      background: var(--green);
-      color: #04100b;
+      border: 1px solid rgba(93, 229, 170, 0.24);
+      border-radius: 9px;
 
-      font-weight: 900;
+      background: rgba(93, 229, 170, 0.09);
+
+      color: var(--positive);
     }
 
-    nav {
+    .brand-mark svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .brand-name {
+      font-size: 16px;
+    }
+
+    .main-nav {
       display: flex;
       align-items: center;
-      gap: 28px;
+      justify-content: center;
+
+      gap: 6px;
     }
 
-    nav a {
+    .nav-link {
+      padding: 8px 11px;
+
+      border: 0;
+      border-radius: 8px;
+
+      background: transparent;
+
       color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
 
-      transition: 0.2s ease;
+      font-size: 13px;
+      font-weight: 500;
+
+      transition:
+        background 160ms ease,
+        color 160ms ease;
     }
 
-    nav a:hover {
+    .nav-link.active {
       color: var(--text);
+
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    .demo-badge {
-      padding: 7px 11px;
+    .nav-link:not(:disabled):hover {
+      color: var(--text);
 
-      border-radius: 999px;
-
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-
-      color: var(--muted);
-
-      font-size: 12px;
-      font-weight: 600;
+      background: rgba(255, 255, 255, 0.04);
     }
 
-    /* HERO */
-
-    .hero {
-      padding: 72px 0 42px;
-      text-align: center;
+    .nav-link:disabled {
+      opacity: 0.45;
     }
 
-    .eyebrow {
+    .nav-right {
+      justify-self: end;
+
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+    }
+
+    .status-chip {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
 
-      padding: 7px 12px;
-      margin-bottom: 22px;
+      gap: 7px;
+
+      padding: 7px 10px;
 
       border: 1px solid var(--border);
       border-radius: 999px;
 
-      background: rgba(255, 255, 255, 0.035);
+      color: var(--muted);
 
-      color: var(--green);
-
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
     }
 
-    .eyebrow-dot {
-      width: 7px;
-      height: 7px;
+    .status-dot {
+      width: 6px;
+      height: 6px;
 
       border-radius: 50%;
 
-      background: var(--green);
-      box-shadow: 0 0 12px var(--green);
+      background: var(--positive);
+      box-shadow: 0 0 12px rgba(93, 229, 170, 0.45);
     }
 
-    h1 {
+    /* =========================
+       HERO / SEARCH
+       ========================= */
+
+    .hero {
+      padding: 68px 0 34px;
+    }
+
+    .hero-inner {
       max-width: 900px;
       margin: 0 auto;
 
-      font-size: clamp(44px, 7vw, 76px);
-      line-height: 0.98;
-
-      letter-spacing: -0.055em;
-
-      font-weight: 760;
+      text-align: center;
     }
 
-    .hero p {
-      max-width: 650px;
-      margin: 24px auto 0;
+    .hero-kicker {
+      margin-bottom: 17px;
+
+      color: var(--positive);
+
+      font-size: 11px;
+      font-weight: 700;
+
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      max-width: 820px;
+      margin: 0 auto;
+
+      font-size: clamp(42px, 5vw, 66px);
+      line-height: 1;
+
+      letter-spacing: -0.052em;
+
+      font-weight: 730;
+    }
+
+    .hero-copy {
+      max-width: 610px;
+      margin: 20px auto 0;
 
       color: var(--muted);
 
-      font-size: 17px;
+      font-size: 16px;
+      line-height: 1.7;
     }
 
-    /* SEARCH */
-
-    .search-wrap {
-      max-width: 700px;
-
-      margin: 34px auto 0;
+    .search-panel {
+      max-width: 720px;
+      margin: 32px auto 0;
     }
 
     .search-box {
       display: flex;
       align-items: center;
 
-      gap: 10px;
+      gap: 8px;
 
-      padding: 8px;
+      padding: 7px;
 
-      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
 
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
 
       box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.35);
+        0 28px 70px rgba(0, 0, 0, 0.28);
     }
 
-    .search-box input {
-      flex: 1;
-
-      min-width: 0;
-
-      padding: 13px 15px;
-
-      border: none;
-      outline: none;
-
-      background: transparent;
-
-      color: var(--text);
-
-      font-size: 15px;
-    }
-
-    .search-box input::placeholder {
-      color: #6e7788;
-    }
-
-    .search-btn {
-      border: none;
-
-      padding: 12px 18px;
-
-      border-radius: 11px;
-
-      background: var(--text);
-      color: #080a0d;
-
-      font-weight: 700;
-    }
-
-    .quick-tickers {
-      margin-top: 13px;
-
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-
-      gap: 8px;
-    }
-
-    .ticker-button {
-      padding: 6px 10px;
-
-      border-radius: 8px;
-
-      border: 1px solid var(--border);
-      background: transparent;
-
-      color: var(--muted);
-
-      font-size: 12px;
-    }
-
-    .ticker-button:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    /* DASHBOARD */
-
-    .dashboard {
-      padding: 24px 0 70px;
-    }
-
-    .stock-heading {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-
-      gap: 20px;
-
-      margin-bottom: 20px;
-    }
-
-    .company-left {
-      display: flex;
-      align-items: center;
-
-      gap: 14px;
-    }
-
-    .company-logo {
-      width: 50px;
-      height: 50px;
+    .search-icon {
+      width: 40px;
 
       display: grid;
       place-items: center;
 
-      border-radius: 13px;
-
-      background: var(--text);
-      color: #07090d;
-
-      font-size: 20px;
-      font-weight: 800;
+      color: var(--muted-2);
     }
 
-    .company-name {
-      font-size: 24px;
-      font-weight: 680;
-
-      letter-spacing: -0.035em;
+    .search-icon svg {
+      width: 18px;
+      height: 18px;
     }
 
-    .company-meta {
-      margin-top: 2px;
+    .search-box input {
+      flex: 1;
+      min-width: 0;
 
-      color: var(--muted);
+      padding: 12px 2px;
 
-      font-size: 13px;
-    }
+      border: 0;
+      outline: 0;
 
-    .price-block {
-      text-align: right;
-    }
-
-    .price {
-      font-size: 30px;
-      font-weight: 700;
-
-      letter-spacing: -0.04em;
-    }
-
-    .price-change {
-      color: var(--green);
+      color: var(--text);
+      background: transparent;
 
       font-size: 14px;
-      font-weight: 650;
     }
 
-    .grid-main {
-      display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.75fr);
-
-      gap: 18px;
+    .search-box input::placeholder {
+      color: var(--muted-2);
     }
 
-    .card {
-      background: var(--card);
+    .search-button {
+      padding: 11px 17px;
 
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border: 0;
+      border-radius: 10px;
 
-      padding: 22px;
+      background: #f4f7fb;
+      color: #07090d;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      transition:
+        transform 150ms ease,
+        opacity 150ms ease;
     }
 
-    .card:hover {
-      background: var(--card-hover);
+    .search-button:hover {
+      opacity: 0.92;
     }
 
-    .card-title {
-      margin-bottom: 18px;
+    .search-button:active {
+      transform: scale(0.98);
+    }
+
+    .quick-search {
+      margin-top: 12px;
 
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      flex-wrap: wrap;
 
-      gap: 10px;
+      gap: 7px;
     }
 
-    .card-title h2 {
-      font-size: 14px;
-      font-weight: 650;
-    }
+    .quick-label {
+      margin-right: 3px;
 
-    .card-label {
-      color: var(--muted);
+      color: var(--muted-2);
 
       font-size: 11px;
-      text-transform: uppercase;
-
-      letter-spacing: 0.08em;
     }
 
-    /* CHART */
+    .ticker-chip {
+      padding: 5px 9px;
 
-    .chart-card {
-      min-height: 430px;
-    }
-
-    .chart-toolbar {
-      display: flex;
-      gap: 5px;
-    }
-
-    .chart-range {
-      padding: 5px 8px;
-
-      border: none;
+      border: 1px solid var(--border);
       border-radius: 7px;
 
       background: transparent;
@@ -441,145 +402,476 @@
       color: var(--muted);
 
       font-size: 11px;
+      font-weight: 600;
+
+      transition:
+        color 140ms ease,
+        background 140ms ease,
+        border-color 140ms ease;
     }
 
-    .chart-range.active {
-      background: rgba(255, 255, 255, 0.08);
+    .ticker-chip:hover {
       color: var(--text);
+
+      border-color: var(--border-strong);
+
+      background: rgba(255, 255, 255, 0.035);
     }
 
-    .chart {
-      width: 100%;
-      height: 305px;
+    /* =========================
+       DASHBOARD
+       ========================= */
 
-      margin-top: 18px;
+    .dashboard {
+      padding: 26px 0 76px;
     }
 
-    .chart svg {
-      width: 100%;
-      height: 100%;
-
-      overflow: visible;
+    .dashboard-shell {
+      border-top: 1px solid var(--border);
     }
 
-    /* AI SCORE */
+    .stock-header {
+      padding: 25px 0 20px;
 
-    .ai-card {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 30px;
     }
 
-    .score-wrap {
+    .company-block {
       display: flex;
-      justify-content: center;
+      align-items: center;
 
-      margin: 10px 0 22px;
+      gap: 14px;
     }
 
-    .score-circle {
-      width: 150px;
-      height: 150px;
-
-      border-radius: 50%;
+    .company-logo {
+      width: 48px;
+      height: 48px;
 
       display: grid;
       place-items: center;
 
-      background:
-        radial-gradient(
-          circle,
-          #0b0e14 57%,
-          transparent 58%
-        ),
-        conic-gradient(
-          var(--green) 0deg 284deg,
-          rgba(255, 255, 255, 0.08) 284deg 360deg
-        );
-    }
+      border: 1px solid var(--border);
+      border-radius: 13px;
 
-    .score-inner {
-      text-align: center;
-    }
+      background: rgba(255, 255, 255, 0.045);
 
-    .score-number {
-      font-size: 38px;
+      color: var(--text);
+
+      font-size: 17px;
       font-weight: 750;
-
-      letter-spacing: -0.05em;
     }
 
-    .score-text {
-      margin-top: -2px;
+    .company-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
 
-      color: var(--green);
+      gap: 8px;
+    }
+
+    .company-name {
+      font-size: 22px;
+      font-weight: 690;
+
+      letter-spacing: -0.035em;
+    }
+
+    .ticker-label {
+      padding: 4px 7px;
+
+      border: 1px solid var(--border);
+      border-radius: 6px;
+
+      color: var(--muted);
+
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .company-meta {
+      margin-top: 3px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+    .market-price {
+      text-align: right;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+
+      gap: 10px;
+    }
+
+    .price {
+      font-size: 29px;
+      font-weight: 720;
+
+      letter-spacing: -0.045em;
+    }
+
+    .change-positive {
+      color: var(--positive);
+
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .market-meta {
+      margin-top: 2px;
+
+      color: var(--muted-2);
+
+      font-size: 10px;
+    }
+
+    /* =========================
+       CARDS
+       ========================= */
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+
+      background: var(--surface);
+
+      overflow: hidden;
+    }
+
+    .card-inner {
+      padding: 20px;
+    }
+
+    .section-eyebrow {
+      color: var(--muted-2);
+
+      font-size: 9px;
+      font-weight: 700;
+
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      margin-top: 4px;
+
+      font-size: 14px;
+      font-weight: 650;
+
+      letter-spacing: -0.015em;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.62fr);
+
+      gap: 14px;
+    }
+
+    /* =========================
+       CHART
+       ========================= */
+
+    .chart-card {
+      min-height: 432px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+
+      gap: 18px;
+    }
+
+    .chart-periods {
+      display: flex;
+      align-items: center;
+
+      gap: 3px;
+    }
+
+    .period-button {
+      min-width: 34px;
+
+      padding: 6px 7px;
+
+      border: 0;
+      border-radius: 7px;
+
+      background: transparent;
+      color: var(--muted-2);
+
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .period-button.active {
+      color: var(--text);
+
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .chart-stats {
+      margin-top: 20px;
+
+      display: flex;
+      align-items: baseline;
+
+      gap: 9px;
+    }
+
+    .chart-price {
+      font-size: 26px;
+      font-weight: 710;
+
+      letter-spacing: -0.04em;
+    }
+
+    .chart-change {
+      color: var(--positive);
 
       font-size: 12px;
       font-weight: 700;
     }
 
-    .ai-summary {
-      color: #c4cad4;
+    .chart-area {
+      position: relative;
 
-      font-size: 13px;
-      line-height: 1.7;
+      height: 277px;
+
+      margin-top: 4px;
     }
 
-    /* METRICS */
+    .chart-area svg {
+      width: 100%;
+      height: 100%;
 
-    .metrics {
-      margin-top: 18px;
+      display: block;
+    }
 
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    .chart-axis {
+      position: absolute;
+
+      top: 14px;
+      right: 0;
+      bottom: 5px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      color: var(--muted-2);
+
+      font-size: 9px;
+
+      pointer-events: none;
+    }
+
+    .chart-bottom-axis {
+      margin-top: 7px;
+
+      display: flex;
+      justify-content: space-between;
+
+      padding-right: 38px;
+
+      color: var(--muted-2);
+
+      font-size: 9px;
+    }
+
+    /* =========================
+       AI VIEW
+       ========================= */
+
+    .ai-card {
+      min-height: 432px;
+    }
+
+    .ai-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
 
       gap: 12px;
     }
 
-    .metric {
-      padding: 18px;
+    .demo-tag {
+      padding: 5px 8px;
 
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 999px;
 
-      background: rgba(255, 255, 255, 0.027);
+      color: var(--muted);
+
+      font-size: 9px;
+      font-weight: 650;
+    }
+
+    .ai-score-wrap {
+      margin: 25px 0 18px;
+
+      display: grid;
+      place-items: center;
+    }
+
+    .score-ring {
+      width: 142px;
+      height: 142px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle,
+          #0b0e13 61%,
+          transparent 62%
+        ),
+        conic-gradient(
+          var(--positive) 0deg 284deg,
+          rgba(255, 255, 255, 0.075) 284deg 360deg
+        );
+    }
+
+    .score-content {
+      text-align: center;
+    }
+
+    .score-number {
+      font-size: 39px;
+      line-height: 1;
+
+      font-weight: 750;
+
+      letter-spacing: -0.05em;
+    }
+
+    .score-caption {
+      margin-top: 5px;
+
+      color: var(--positive);
+
+      font-size: 9px;
+      font-weight: 750;
+
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .ai-view-label {
+      color: var(--text-soft);
+
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .ai-summary {
+      margin-top: 8px;
+
+      color: var(--muted);
+
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .confidence-row {
+      margin-top: 18px;
+      padding-top: 15px;
+
+      border-top: 1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      color: var(--muted-2);
+
+      font-size: 10px;
+    }
+
+    .confidence-value {
+      color: var(--text-soft);
+
+      font-weight: 650;
+    }
+
+    /* =========================
+       METRICS
+       ========================= */
+
+    .metrics-grid {
+      margin-top: 14px;
+
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+
+      gap: 10px;
+    }
+
+    .metric-card {
+      min-height: 104px;
+
+      padding: 15px;
+
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+
+      background: rgba(255, 255, 255, 0.025);
     }
 
     .metric-name {
       color: var(--muted);
 
-      font-size: 12px;
+      font-size: 10px;
     }
 
     .metric-value {
-      margin-top: 6px;
+      margin-top: 7px;
 
-      font-size: 21px;
+      color: var(--text);
+
+      font-size: 18px;
       font-weight: 680;
 
-      letter-spacing: -0.035em;
+      letter-spacing: -0.025em;
     }
 
-    .metric-note {
-      margin-top: 2px;
+    .metric-context {
+      margin-top: 4px;
 
-      color: var(--muted);
+      color: var(--muted-2);
 
-      font-size: 11px;
+      font-size: 9px;
     }
 
-    /* BULL BEAR */
+    /* =========================
+       LOWER GRID
+       ========================= */
 
-    .analysis-grid {
-      margin-top: 18px;
+    .lower-grid {
+      margin-top: 14px;
 
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(330px, 0.72fr);
 
-      gap: 18px;
+      gap: 14px;
     }
 
     .case-card {
-      min-height: 215px;
+      min-height: 250px;
     }
 
     .case-heading {
@@ -587,193 +879,367 @@
       align-items: center;
 
       gap: 9px;
-
-      margin-bottom: 18px;
-
-      font-size: 14px;
-      font-weight: 680;
     }
 
     .case-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
 
       display: grid;
       place-items: center;
 
-      border-radius: 8px;
+      border-radius: 7px;
+
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .bull .case-icon {
-      background: var(--green-soft);
-      color: var(--green);
+      color: var(--positive);
+      background: var(--positive-soft);
     }
 
     .bear .case-icon {
-      background: var(--red-soft);
-      color: var(--red);
+      color: var(--negative);
+      background: var(--negative-soft);
+    }
+
+    .case-title {
+      font-size: 13px;
+      font-weight: 650;
     }
 
     .case-list {
+      margin-top: 18px;
+
       display: grid;
-      gap: 13px;
+      gap: 14px;
     }
 
-    .case-row {
-      display: flex;
+    .case-item {
+      display: grid;
+      grid-template-columns: 6px 1fr;
 
       gap: 10px;
 
-      color: #bac1cc;
+      color: var(--muted);
 
-      font-size: 13px;
-      line-height: 1.55;
+      font-size: 11px;
+      line-height: 1.65;
     }
 
-    .bullet {
-      margin-top: 7px;
-
+    .case-dot {
       width: 5px;
       height: 5px;
 
-      flex: 0 0 auto;
+      margin-top: 7px;
 
       border-radius: 50%;
     }
 
-    .bull .bullet {
-      background: var(--green);
+    .bull .case-dot {
+      background: var(--positive);
     }
 
-    .bear .bullet {
-      background: var(--red);
+    .bear .case-dot {
+      background: var(--negative);
     }
 
-    /* SCORE BREAKDOWN */
+    /* =========================
+       FACTOR SCORES
+       ========================= */
 
-    .breakdown {
+    .factor-card {
+      min-height: 250px;
+    }
+
+    .factor-list {
       margin-top: 18px;
+
+      display: grid;
+      gap: 15px;
     }
 
-    .breakdown-grid {
+    .factor-row {
       display: grid;
-      gap: 17px;
-    }
-
-    .bar-row {
-      display: grid;
-      grid-template-columns: 110px 1fr 38px;
+      grid-template-columns: 104px 1fr 28px;
 
       align-items: center;
-      gap: 12px;
 
-      font-size: 12px;
+      gap: 10px;
     }
 
-    .bar-name {
+    .factor-name {
       color: var(--muted);
+
+      font-size: 10px;
     }
 
-    .bar {
-      height: 7px;
-
-      overflow: hidden;
+    .factor-track {
+      height: 5px;
 
       border-radius: 999px;
 
-      background: rgba(255, 255, 255, 0.07);
+      overflow: hidden;
+
+      background: rgba(255, 255, 255, 0.06);
     }
 
-    .bar-fill {
+    .factor-fill {
       height: 100%;
 
       border-radius: inherit;
 
-      background: var(--green);
+      background: var(--positive);
     }
 
-    .bar-score {
+    .factor-score {
       text-align: right;
 
-      color: var(--text);
+      color: var(--text-soft);
 
+      font-size: 10px;
       font-weight: 650;
     }
 
-    footer {
-      padding: 30px 0 45px;
+    /* =========================
+       DISCLAIMER
+       ========================= */
 
-      color: #60697a;
+    .research-note {
+      margin-top: 14px;
 
-      text-align: center;
+      padding: 14px 16px;
 
-      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      background: rgba(255, 255, 255, 0.018);
+
+      color: var(--muted-2);
+
+      font-size: 10px;
+      line-height: 1.6;
     }
 
-    /* RESPONSIVE */
-
-    @media (max-width: 900px) {
-      nav {
-        display: none;
-      }
-
-      .grid-main {
-        grid-template-columns: 1fr;
-      }
-
-      .metrics {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .analysis-grid {
-        grid-template-columns: 1fr;
-      }
+    .research-note strong {
+      color: var(--muted);
+      font-weight: 650;
     }
 
-    @media (max-width: 600px) {
-      .container {
-        width: min(calc(100% - 24px), var(--max-width));
+    /* =========================
+       FOOTER
+       ========================= */
+
+    .site-footer {
+      padding: 0 0 38px;
+    }
+
+    .footer-inner {
+      padding-top: 18px;
+
+      border-top: 1px solid var(--border);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 20px;
+
+      color: var(--muted-2);
+
+      font-size: 10px;
+    }
+
+    /* =========================
+       TOAST
+       ========================= */
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 200;
+
+      max-width: 330px;
+
+      padding: 12px 14px;
+
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+
+      background: rgba(12, 15, 21, 0.96);
+
+      color: var(--text-soft);
+
+      font-size: 11px;
+
+      box-shadow:
+        0 18px 50px rgba(0, 0, 0, 0.38);
+
+      opacity: 0;
+      transform: translateY(8px);
+
+      pointer-events: none;
+
+      transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================
+       RESPONSIVE
+       ========================= */
+
+    @media (max-width: 1120px) {
+      .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .navbar {
-        height: 62px;
-      }
-
-      .hero {
-        padding-top: 55px;
-      }
-
-      h1 {
-        font-size: 44px;
-      }
-
-      .hero p {
-        font-size: 15px;
-      }
-
-      .stock-heading {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .price-block {
-        text-align: left;
-      }
-
-      .metrics {
+      .lower-grid {
         grid-template-columns: 1fr 1fr;
       }
 
-      .card {
-        padding: 17px;
+      .factor-card {
+        grid-column: 1 / -1;
+      }
+
+      .factor-list {
+        grid-template-columns: 1fr 1fr;
+        column-gap: 28px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .nav-shell {
+        grid-template-columns: 1fr auto;
+      }
+
+      .main-nav {
+        display: none;
+      }
+
+      .top-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-card {
+        min-height: auto;
+      }
+
+      .stock-header {
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        width: min(calc(100% - 24px), var(--container));
+      }
+
+      .hero {
+        padding-top: 48px;
+      }
+
+      .hero h1 {
+        font-size: 43px;
+      }
+
+      .hero-copy {
+        font-size: 14px;
+      }
+
+      .status-chip {
+        display: none;
+      }
+
+      .stock-header {
+        flex-direction: column;
+
+        gap: 15px;
+      }
+
+      .market-price {
+        text-align: left;
+      }
+
+      .price-row {
+        justify-content: flex-start;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .lower-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .factor-card {
+        grid-column: auto;
+      }
+
+      .factor-list {
+        grid-template-columns: 1fr;
       }
 
       .chart-card {
-        min-height: 380px;
+        min-height: 390px;
       }
 
-      .chart {
-        height: 260px;
+      .chart-area {
+        height: 235px;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 6px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 38px;
+      }
+
+      .search-icon {
+        display: none;
+      }
+
+      .search-box {
+        padding-left: 12px;
+      }
+
+      .search-button {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .metric-card {
+        min-height: 96px;
+      }
+
+      .card-inner {
+        padding: 17px;
+      }
+
+      .chart-periods {
+        gap: 0;
+      }
+
+      .period-button {
+        min-width: 30px;
       }
     }
   </style>
@@ -781,23 +1247,73 @@
 
 <body>
 
-  <header>
-    <div class="container navbar">
+  <header class="site-header">
+    <div class="container nav-shell">
 
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <span>AI Stocks</span>
-      </div>
+      <a class="brand" href="#">
+        <span class="brand-mark" aria-hidden="true">
 
-      <nav>
-        <a href="#">Analyze</a>
-        <a href="#">Screener</a>
-        <a href="#">Compare</a>
-        <a href="#">Watchlist</a>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M4 17L9 12L13 15L20 7" />
+            <path d="M15 7H20V12" />
+          </svg>
+
+        </span>
+
+        <span class="brand-name">
+          AI Stocks
+        </span>
+      </a>
+
+
+      <nav class="main-nav" aria-label="Primary navigation">
+
+        <button class="nav-link active" type="button">
+          Analyze
+        </button>
+
+        <button
+          class="nav-link"
+          type="button"
+          disabled
+          title="Coming soon"
+        >
+          Screener
+        </button>
+
+        <button
+          class="nav-link"
+          type="button"
+          disabled
+          title="Coming soon"
+        >
+          Compare
+        </button>
+
+        <button
+          class="nav-link"
+          type="button"
+          disabled
+          title="Coming soon"
+        >
+          Watchlist
+        </button>
+
       </nav>
 
-      <div class="demo-badge">
-        DEMO
+
+      <div class="nav-right">
+
+        <div class="status-chip">
+          <span class="status-dot"></span>
+          Research preview
+        </div>
+
       </div>
 
     </div>
@@ -807,98 +1323,130 @@
   <main>
 
     <section class="hero">
-
       <div class="container">
 
-        <div class="eyebrow">
-          <span class="eyebrow-dot"></span>
-          AI-POWERED EQUITY RESEARCH
-        </div>
+        <div class="hero-inner">
 
-        <h1>
-          Understand any stock.
-          <br />
-          Faster.
-        </h1>
-
-        <p>
-          Financial data, valuation, risk and market signals
-          combined into one AI-powered investment research platform.
-        </p>
-
-        <div class="search-wrap">
-
-          <div class="search-box">
-
-            <input
-              id="stockSearch"
-              type="text"
-              placeholder="Search ticker or company..."
-              autocomplete="off"
-            />
-
-            <button
-              class="search-btn"
-              onclick="analyzeStock()"
-            >
-              Analyze
-            </button>
-
+          <div class="hero-kicker">
+            AI-Powered Equity Research
           </div>
 
-          <div class="quick-tickers">
+          <h1>
+            Research stocks with more clarity.
+          </h1>
 
-            <button
-              class="ticker-button"
-              onclick="selectStock('AAPL')"
-            >
-              AAPL
-            </button>
+          <p class="hero-copy">
+            Financial performance, valuation, market signals and
+            AI-generated research brought together in one focused workspace.
+          </p>
 
-            <button
-              class="ticker-button"
-              onclick="selectStock('NVDA')"
-            >
-              NVDA
-            </button>
 
-            <button
-              class="ticker-button"
-              onclick="selectStock('MSFT')"
-            >
-              MSFT
-            </button>
+          <div class="search-panel">
 
-            <button
-              class="ticker-button"
-              onclick="selectStock('GOOGL')"
-            >
-              GOOGL
-            </button>
+            <div class="search-box">
 
-            <button
-              class="ticker-button"
-              onclick="selectStock('AMZN')"
-            >
-              AMZN
-            </button>
+              <div class="search-icon" aria-hidden="true">
+
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20L16.5 16.5" />
+                </svg>
+
+              </div>
+
+
+              <input
+                id="stockSearch"
+                type="text"
+                placeholder="Search by ticker — try AAPL, NVDA, MSFT..."
+                aria-label="Search stock ticker"
+                autocomplete="off"
+                spellcheck="false"
+              />
+
+
+              <button
+                class="search-button"
+                type="button"
+                onclick="analyzeStock()"
+              >
+                Analyze
+              </button>
+
+            </div>
+
+
+            <div class="quick-search">
+
+              <span class="quick-label">
+                Popular
+              </span>
+
+              <button
+                class="ticker-chip"
+                type="button"
+                onclick="selectStock('AAPL')"
+              >
+                AAPL
+              </button>
+
+              <button
+                class="ticker-chip"
+                type="button"
+                onclick="selectStock('NVDA')"
+              >
+                NVDA
+              </button>
+
+              <button
+                class="ticker-chip"
+                type="button"
+                onclick="selectStock('MSFT')"
+              >
+                MSFT
+              </button>
+
+              <button
+                class="ticker-chip"
+                type="button"
+                onclick="selectStock('GOOGL')"
+              >
+                GOOGL
+              </button>
+
+              <button
+                class="ticker-chip"
+                type="button"
+                onclick="selectStock('AMZN')"
+              >
+                AMZN
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
       </div>
-
     </section>
 
 
-    <section class="dashboard">
+    <section
+      class="dashboard"
+      id="dashboard"
+    >
 
-      <div class="container">
+      <div class="container dashboard-shell">
 
-        <div class="stock-heading">
+        <div class="stock-header">
 
-          <div class="company-left">
+          <div class="company-block">
 
             <div
               class="company-logo"
@@ -907,253 +1455,377 @@
               A
             </div>
 
+
             <div>
-              <div
-                class="company-name"
-                id="companyName"
-              >
-                Apple Inc.
+
+              <div class="company-title-row">
+
+                <div
+                  class="company-name"
+                  id="companyName"
+                >
+                  Apple Inc.
+                </div>
+
+                <span
+                  class="ticker-label"
+                  id="tickerLabel"
+                >
+                  AAPL
+                </span>
+
               </div>
+
 
               <div
                 class="company-meta"
                 id="companyMeta"
               >
-                AAPL · NASDAQ · Technology · Demo data
+                NASDAQ · Technology · Demo data
               </div>
+
             </div>
 
           </div>
 
 
-          <div class="price-block">
+          <div class="market-price">
 
-            <div
-              class="price"
-              id="stockPrice"
-            >
-              $231.28
-            </div>
+            <div class="price-row">
 
-            <div
-              class="price-change"
-              id="stockChange"
-            >
-              +1.47%
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="grid-main">
-
-          <div class="card chart-card">
-
-            <div class="card-title">
-
-              <div>
-                <div class="card-label">
-                  PRICE PERFORMANCE
-                </div>
-
-                <h2>
-                  Market Chart
-                </h2>
-              </div>
-
-
-              <div class="chart-toolbar">
-
-                <button class="chart-range">
-                  1D
-                </button>
-
-                <button class="chart-range">
-                  1W
-                </button>
-
-                <button class="chart-range">
-                  1M
-                </button>
-
-                <button class="chart-range active">
-                  1Y
-                </button>
-
-                <button class="chart-range">
-                  5Y
-                </button>
-
-              </div>
-
-            </div>
-
-
-            <div class="chart">
-
-              <svg
-                viewBox="0 0 900 300"
-                preserveAspectRatio="none"
+              <div
+                class="price"
+                id="stockPrice"
               >
-
-                <defs>
-
-                  <linearGradient
-                    id="areaGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-
-                    <stop
-                      offset="0%"
-                      stop-color="#42e6a4"
-                      stop-opacity="0.22"
-                    />
-
-                    <stop
-                      offset="100%"
-                      stop-color="#42e6a4"
-                      stop-opacity="0"
-                    />
-
-                  </linearGradient>
-
-                </defs>
-
-
-                <line
-                  x1="0"
-                  y1="75"
-                  x2="900"
-                  y2="75"
-                  stroke="rgba(255,255,255,0.05)"
-                />
-
-                <line
-                  x1="0"
-                  y1="150"
-                  x2="900"
-                  y2="150"
-                  stroke="rgba(255,255,255,0.05)"
-                />
-
-                <line
-                  x1="0"
-                  y1="225"
-                  x2="900"
-                  y2="225"
-                  stroke="rgba(255,255,255,0.05)"
-                />
-
-
-                <path
-                  d="
-                    M0 245
-                    C50 225, 70 235, 105 208
-                    S165 202, 200 185
-                    S250 188, 295 150
-                    S350 175, 395 145
-                    S455 160, 495 125
-                    S550 142, 590 112
-                    S645 128, 685 88
-                    S740 105, 775 68
-                    S835 92, 900 38
-                    L900 300
-                    L0 300
-                    Z
-                  "
-                  fill="url(#areaGradient)"
-                />
-
-                <path
-                  d="
-                    M0 245
-                    C50 225, 70 235, 105 208
-                    S165 202, 200 185
-                    S250 188, 295 150
-                    S350 175, 395 145
-                    S455 160, 495 125
-                    S550 142, 590 112
-                    S645 128, 685 88
-                    S740 105, 775 68
-                    S835 92, 900 38
-                  "
-                  fill="none"
-                  stroke="#42e6a4"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                />
-
-              </svg>
-
-            </div>
-
-          </div>
-
-
-          <div class="card ai-card">
-
-            <div class="card-title">
-
-              <div>
-                <div class="card-label">
-                  AI ANALYSIS
-                </div>
-
-                <h2>
-                  AI Score
-                </h2>
+                $231.28
               </div>
 
-              <span class="demo-badge">
-                DEMO
-              </span>
-
-            </div>
-
-
-            <div class="score-wrap">
-
-              <div class="score-circle">
-
-                <div class="score-inner">
-
-                  <div class="score-number">
-                    79
-                  </div>
-
-                  <div class="score-text">
-                    POSITIVE
-                  </div>
-
-                </div>
-
+              <div
+                class="change-positive"
+                id="stockChange"
+              >
+                +1.47%
               </div>
 
             </div>
 
-
-            <p class="ai-summary">
-
-              Strong profitability and durable cash generation
-              support the business, while valuation remains the
-              primary constraint. Momentum is constructive, but
-              expectations are already elevated.
-
-            </p>
+            <div class="market-meta">
+              Demo market data · USD
+            </div>
 
           </div>
 
         </div>
 
 
-        <div class="metrics">
+        <div class="top-grid">
 
-          <div class="metric">
+          <article class="card chart-card">
+
+            <div class="card-inner">
+
+              <div class="chart-header">
+
+                <div>
+
+                  <div class="section-eyebrow">
+                    Price Performance
+                  </div>
+
+                  <div class="section-title">
+                    Market Chart
+                  </div>
+
+                </div>
+
+
+                <div
+                  class="chart-periods"
+                  aria-label="Chart periods"
+                >
+
+                  <button
+                    class="period-button"
+                    type="button"
+                  >
+                    1D
+                  </button>
+
+                  <button
+                    class="period-button"
+                    type="button"
+                  >
+                    1W
+                  </button>
+
+                  <button
+                    class="period-button"
+                    type="button"
+                  >
+                    1M
+                  </button>
+
+                  <button
+                    class="period-button active"
+                    type="button"
+                  >
+                    1Y
+                  </button>
+
+                  <button
+                    class="period-button"
+                    type="button"
+                  >
+                    5Y
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div class="chart-stats">
+
+                <span
+                  class="chart-price"
+                  id="chartPrice"
+                >
+                  $231.28
+                </span>
+
+                <span
+                  class="chart-change"
+                  id="chartChange"
+                >
+                  +18.62% 1Y
+                </span>
+
+              </div>
+
+
+              <div class="chart-area">
+
+                <svg
+                  viewBox="0 0 900 280"
+                  preserveAspectRatio="none"
+                  role="img"
+                  aria-label="Demo stock price chart"
+                >
+
+                  <defs>
+
+                    <linearGradient
+                      id="chartGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+
+                      <stop
+                        offset="0%"
+                        stop-color="#5de5aa"
+                        stop-opacity="0.18"
+                      />
+
+                      <stop
+                        offset="100%"
+                        stop-color="#5de5aa"
+                        stop-opacity="0"
+                      />
+
+                    </linearGradient>
+
+                  </defs>
+
+
+                  <line
+                    x1="0"
+                    y1="50"
+                    x2="900"
+                    y2="50"
+                    stroke="rgba(255,255,255,0.045)"
+                    stroke-width="1"
+                  />
+
+                  <line
+                    x1="0"
+                    y1="110"
+                    x2="900"
+                    y2="110"
+                    stroke="rgba(255,255,255,0.045)"
+                    stroke-width="1"
+                  />
+
+                  <line
+                    x1="0"
+                    y1="170"
+                    x2="900"
+                    y2="170"
+                    stroke="rgba(255,255,255,0.045)"
+                    stroke-width="1"
+                  />
+
+                  <line
+                    x1="0"
+                    y1="230"
+                    x2="900"
+                    y2="230"
+                    stroke="rgba(255,255,255,0.045)"
+                    stroke-width="1"
+                  />
+
+
+                  <path
+                    d="
+                      M0 226
+                      C36 210, 55 217, 83 204
+                      C112 192, 127 201, 158 186
+                      C188 171, 204 180, 233 168
+                      C264 154, 280 166, 310 145
+                      C342 124, 361 144, 390 131
+                      C421 116, 440 129, 471 112
+                      C500 96, 519 111, 550 95
+                      C578 80, 602 95, 629 78
+                      C660 59, 678 77, 706 62
+                      C736 46, 759 61, 789 43
+                      C820 25, 845 44, 900 18
+                      L900 280
+                      L0 280
+                      Z
+                    "
+                    fill="url(#chartGradient)"
+                  />
+
+
+                  <path
+                    d="
+                      M0 226
+                      C36 210, 55 217, 83 204
+                      C112 192, 127 201, 158 186
+                      C188 171, 204 180, 233 168
+                      C264 154, 280 166, 310 145
+                      C342 124, 361 144, 390 131
+                      C421 116, 440 129, 471 112
+                      C500 96, 519 111, 550 95
+                      C578 80, 602 95, 629 78
+                      C660 59, 678 77, 706 62
+                      C736 46, 759 61, 789 43
+                      C820 25, 845 44, 900 18
+                    "
+                    fill="none"
+                    stroke="#5de5aa"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                  />
+
+                </svg>
+
+
+                <div class="chart-axis">
+                  <span>$240</span>
+                  <span>$220</span>
+                  <span>$200</span>
+                  <span>$180</span>
+                  <span>$160</span>
+                </div>
+
+              </div>
+
+
+              <div class="chart-bottom-axis">
+                <span>Sep</span>
+                <span>Dec</span>
+                <span>Mar</span>
+                <span>Jun</span>
+                <span>Sep</span>
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <aside class="card ai-card">
+
+            <div class="card-inner">
+
+              <div class="ai-top-row">
+
+                <div>
+
+                  <div class="section-eyebrow">
+                    AI Research
+                  </div>
+
+                  <div class="section-title">
+                    Investment View
+                  </div>
+
+                </div>
+
+                <span class="demo-tag">
+                  DEMO
+                </span>
+
+              </div>
+
+
+              <div class="ai-score-wrap">
+
+                <div class="score-ring">
+
+                  <div class="score-content">
+
+                    <div class="score-number">
+                      79
+                    </div>
+
+                    <div class="score-caption">
+                      Positive
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div class="ai-view-label">
+                Constructive outlook
+              </div>
+
+              <p class="ai-summary">
+                Strong profitability and durable cash generation
+                support the investment case. Valuation remains the
+                primary constraint as expectations are already elevated.
+              </p>
+
+
+              <div class="confidence-row">
+
+                <span>
+                  Model confidence
+                </span>
+
+                <span class="confidence-value">
+                  82%
+                </span>
+
+              </div>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+
+        <div class="metrics-grid">
+
+          <div class="metric-card">
+
             <div class="metric-name">
               Market Cap
             </div>
@@ -1162,13 +1834,15 @@
               $3.5T
             </div>
 
-            <div class="metric-note">
-              Demo value
+            <div class="metric-context">
+              Equity value
             </div>
+
           </div>
 
 
-          <div class="metric">
+          <div class="metric-card">
+
             <div class="metric-name">
               P/E Ratio
             </div>
@@ -1177,13 +1851,15 @@
               35.2×
             </div>
 
-            <div class="metric-note">
-              Forward valuation
+            <div class="metric-context">
+              Forward
             </div>
+
           </div>
 
 
-          <div class="metric">
+          <div class="metric-card">
+
             <div class="metric-name">
               Revenue Growth
             </div>
@@ -1192,114 +1868,59 @@
               +6.1%
             </div>
 
-            <div class="metric-note">
-              YoY
+            <div class="metric-context">
+              Year over year
             </div>
+
           </div>
 
 
-          <div class="metric">
+          <div class="metric-card">
+
             <div class="metric-name">
-              Net Margin
+              EPS Growth
             </div>
 
             <div class="metric-value">
-              24.3%
+              +8.4%
             </div>
 
-            <div class="metric-note">
-              TTM
-            </div>
-          </div>
-
-        </div>
-
-
-        <div class="analysis-grid">
-
-          <div class="card case-card bull">
-
-            <div class="case-heading">
-
-              <div class="case-icon">
-                ↑
-              </div>
-
-              Bull Case
-
-            </div>
-
-
-            <div class="case-list">
-
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Strong free cash flow generation creates
-                  substantial financial flexibility.
-                </span>
-              </div>
-
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Ecosystem strength supports high customer
-                  retention and recurring revenue.
-                </span>
-              </div>
-
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Services growth could continue expanding
-                  company-wide margins.
-                </span>
-              </div>
-
+            <div class="metric-context">
+              Year over year
             </div>
 
           </div>
 
 
-          <div class="card case-card bear">
+          <div class="metric-card">
 
-            <div class="case-heading">
-
-              <div class="case-icon">
-                ↓
-              </div>
-
-              Bear Case
-
+            <div class="metric-name">
+              FCF Margin
             </div>
 
+            <div class="metric-value">
+              26.8%
+            </div>
 
-            <div class="case-list">
+            <div class="metric-context">
+              Trailing twelve months
+            </div>
 
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Premium valuation leaves less room for
-                  earnings disappointments.
-                </span>
-              </div>
+          </div>
 
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Mature hardware markets may limit long-term
-                  unit growth.
-                </span>
-              </div>
 
-              <div class="case-row">
-                <span class="bullet"></span>
-                <span>
-                  Regulatory pressure could affect high-margin
-                  platform revenue.
-                </span>
-              </div>
+          <div class="metric-card">
 
+            <div class="metric-name">
+              ROE
+            </div>
+
+            <div class="metric-value">
+              157%
+            </div>
+
+            <div class="metric-context">
+              Return on equity
             </div>
 
           </div>
@@ -1307,224 +1928,440 @@
         </div>
 
 
-        <div class="card breakdown">
+        <div class="lower-grid">
 
-          <div class="card-title">
+          <article class="card case-card bull">
 
-            <div>
-              <div class="card-label">
-                MODEL BREAKDOWN
+            <div class="card-inner">
+
+              <div class="case-heading">
+
+                <div class="case-icon">
+                  ↑
+                </div>
+
+                <div>
+
+                  <div class="section-eyebrow">
+                    Scenario Analysis
+                  </div>
+
+                  <div class="case-title">
+                    Bull Case
+                  </div>
+
+                </div>
+
               </div>
 
-              <h2>
-                Analysis Factors
-              </h2>
-            </div>
 
-          </div>
+              <div class="case-list">
+
+                <div class="case-item">
+
+                  <span class="case-dot"></span>
+
+                  <span>
+                    High free cash flow generation supports buybacks,
+                    strategic investment and long-term capital flexibility.
+                  </span>
+
+                </div>
 
 
-          <div class="breakdown-grid">
+                <div class="case-item">
 
-            <div class="bar-row">
-              <span class="bar-name">
-                Financial Health
-              </span>
+                  <span class="case-dot"></span>
 
-              <div class="bar">
-                <div
-                  class="bar-fill"
-                  style="width: 91%"
-                ></div>
+                  <span>
+                    Ecosystem strength creates durable customer retention
+                    and recurring services revenue.
+                  </span>
+
+                </div>
+
+
+                <div class="case-item">
+
+                  <span class="case-dot"></span>
+
+                  <span>
+                    Services mix expansion may continue supporting
+                    company-wide margin resilience.
+                  </span>
+
+                </div>
+
               </div>
 
-              <span class="bar-score">
-                91
-              </span>
             </div>
 
+          </article>
 
-            <div class="bar-row">
-              <span class="bar-name">
-                Growth
-              </span>
 
-              <div class="bar">
-                <div
-                  class="bar-fill"
-                  style="width: 72%"
-                ></div>
+          <article class="card case-card bear">
+
+            <div class="card-inner">
+
+              <div class="case-heading">
+
+                <div class="case-icon">
+                  ↓
+                </div>
+
+                <div>
+
+                  <div class="section-eyebrow">
+                    Scenario Analysis
+                  </div>
+
+                  <div class="case-title">
+                    Bear Case
+                  </div>
+
+                </div>
+
               </div>
 
-              <span class="bar-score">
-                72
-              </span>
-            </div>
+
+              <div class="case-list">
+
+                <div class="case-item">
+
+                  <span class="case-dot"></span>
+
+                  <span>
+                    Premium valuation reduces the margin of safety if
+                    future earnings growth disappoints.
+                  </span>
+
+                </div>
 
 
-            <div class="bar-row">
-              <span class="bar-name">
-                Valuation
-              </span>
+                <div class="case-item">
 
-              <div class="bar">
-                <div
-                  class="bar-fill"
-                  style="width: 61%"
-                ></div>
+                  <span class="case-dot"></span>
+
+                  <span>
+                    Mature hardware categories may limit long-term
+                    unit growth without major new product cycles.
+                  </span>
+
+                </div>
+
+
+                <div class="case-item">
+
+                  <span class="case-dot"></span>
+
+                  <span>
+                    Regulatory pressure remains a potential risk to
+                    high-margin platform and services economics.
+                  </span>
+
+                </div>
+
               </div>
 
-              <span class="bar-score">
-                61
-              </span>
             </div>
 
+          </article>
 
-            <div class="bar-row">
-              <span class="bar-name">
-                Momentum
-              </span>
 
-              <div class="bar">
-                <div
-                  class="bar-fill"
-                  style="width: 83%"
-                ></div>
+          <article class="card factor-card">
+
+            <div class="card-inner">
+
+              <div class="section-eyebrow">
+                Model Breakdown
               </div>
 
-              <span class="bar-score">
-                83
-              </span>
-            </div>
-
-
-            <div class="bar-row">
-              <span class="bar-name">
-                Profitability
-              </span>
-
-              <div class="bar">
-                <div
-                  class="bar-fill"
-                  style="width: 94%"
-                ></div>
+              <div class="section-title">
+                Factor Scores
               </div>
 
-              <span class="bar-score">
-                94
-              </span>
+
+              <div class="factor-list">
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Financial Health
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 91%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    91
+                  </span>
+
+                </div>
+
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Profitability
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 94%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    94
+                  </span>
+
+                </div>
+
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Growth
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 72%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    72
+                  </span>
+
+                </div>
+
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Valuation
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 61%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    61
+                  </span>
+
+                </div>
+
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Momentum
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 83%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    83
+                  </span>
+
+                </div>
+
+
+                <div class="factor-row">
+
+                  <span class="factor-name">
+                    Risk
+                  </span>
+
+                  <div class="factor-track">
+                    <div
+                      class="factor-fill"
+                      style="width: 68%"
+                    ></div>
+                  </div>
+
+                  <span class="factor-score">
+                    68
+                  </span>
+
+                </div>
+
+              </div>
+
             </div>
 
-          </div>
+          </article>
 
+        </div>
+
+
+        <div class="research-note">
+          <strong>Research preview.</strong>
+          Financial figures, prices and AI outputs shown on this page are
+          demonstration data and are not investment recommendations.
+          Live financial data will be connected in a later release.
         </div>
 
       </div>
-
     </section>
 
   </main>
 
 
-  <footer>
+  <footer class="site-footer">
 
-    AI Stocks · Demo interface · Not financial advice
+    <div class="container footer-inner">
+
+      <span>
+        © 2026 AI Stocks
+      </span>
+
+      <span>
+        Research tools for informational purposes only.
+      </span>
+
+    </div>
 
   </footer>
 
 
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
   <script>
-
     const demoStocks = {
-
       AAPL: {
         name: "Apple Inc.",
+        sector: "Technology",
         price: "$231.28",
         change: "+1.47%",
-        letter: "A",
-        sector: "Technology"
+        yearly: "+18.62% 1Y",
+        logo: "A"
       },
 
       NVDA: {
         name: "NVIDIA Corporation",
+        sector: "Semiconductors",
         price: "$119.14",
         change: "+2.31%",
-        letter: "N",
-        sector: "Semiconductors"
+        yearly: "+42.18% 1Y",
+        logo: "N"
       },
 
       MSFT: {
         name: "Microsoft Corporation",
+        sector: "Technology",
         price: "$507.42",
         change: "+0.88%",
-        letter: "M",
-        sector: "Technology"
+        yearly: "+23.74% 1Y",
+        logo: "M"
       },
 
       GOOGL: {
         name: "Alphabet Inc.",
+        sector: "Communication Services",
         price: "$236.71",
         change: "+1.12%",
-        letter: "G",
-        sector: "Communication Services"
+        yearly: "+27.09% 1Y",
+        logo: "G"
       },
 
       AMZN: {
         name: "Amazon.com Inc.",
+        sector: "Consumer Discretionary",
         price: "$231.55",
         change: "+0.69%",
-        letter: "A",
-        sector: "Consumer Discretionary"
+        yearly: "+19.45% 1Y",
+        logo: "A"
       }
-
     };
 
 
+    const stockSearch =
+      document.getElementById("stockSearch");
+
+    const dashboard =
+      document.getElementById("dashboard");
+
+    const toast =
+      document.getElementById("toast");
+
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      window.clearTimeout(showToast.timeout);
+
+      showToast.timeout = window.setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2600);
+    }
+
+
     function selectStock(ticker) {
-
-      document.getElementById("stockSearch").value = ticker;
-
+      stockSearch.value = ticker;
       showStock(ticker);
-
     }
 
 
     function analyzeStock() {
+      const ticker =
+        stockSearch.value.trim().toUpperCase();
 
-      const input =
-        document
-          .getElementById("stockSearch")
-          .value
-          .trim()
-          .toUpperCase();
+      if (!ticker) {
+        showToast("Enter a ticker symbol to analyze.");
+        stockSearch.focus();
+        return;
+      }
 
-      showStock(input);
-
+      showStock(ticker);
     }
 
 
     function showStock(ticker) {
-
       const stock = demoStocks[ticker];
 
       if (!stock) {
-
-        alert(
-          "This is currently a design demo. Try AAPL, NVDA, MSFT, GOOGL or AMZN."
+        showToast(
+          "Design preview: try AAPL, NVDA, MSFT, GOOGL or AMZN."
         );
 
         return;
       }
 
+      document.getElementById("companyLogo").textContent =
+        stock.logo;
 
       document.getElementById("companyName").textContent =
         stock.name;
 
-      document.getElementById("companyMeta").textContent =
-        `${ticker} · NASDAQ · ${stock.sector} · Demo data`;
+      document.getElementById("tickerLabel").textContent =
+        ticker;
 
-      document.getElementById("companyLogo").textContent =
-        stock.letter;
+      document.getElementById("companyMeta").textContent =
+        `NASDAQ · ${stock.sector} · Demo data`;
 
       document.getElementById("stockPrice").textContent =
         stock.price;
@@ -1532,26 +2369,46 @@
       document.getElementById("stockChange").textContent =
         stock.change;
 
+      document.getElementById("chartPrice").textContent =
+        stock.price;
 
-      document
-        .querySelector(".dashboard")
-        .scrollIntoView({
-          behavior: "smooth"
-        });
+      document.getElementById("chartChange").textContent =
+        stock.yearly;
 
+      dashboard.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
 
 
-    document
-      .getElementById("stockSearch")
-      .addEventListener("keydown", function(event) {
-
+    stockSearch.addEventListener(
+      "keydown",
+      function(event) {
         if (event.key === "Enter") {
           analyzeStock();
         }
+      }
+    );
 
+
+    document
+      .querySelectorAll(".period-button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          document
+            .querySelectorAll(".period-button")
+            .forEach((item) => {
+              item.classList.remove("active");
+            });
+
+          button.classList.add("active");
+
+          showToast(
+            "Chart period switching will activate with live market data."
+          );
+        });
       });
-
   </script>
 
 </body>
