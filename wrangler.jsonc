@@ -10,6 +10,13 @@
     ]
   },
 
+  "kv_namespaces": [
+    {
+      "binding": "ANALYSIS_CACHE",
+      "id": "2cc8de0a312d4391a1902edd40114963"
+    }
+  ],
+
   "routes": [
     {
       "pattern": "stocks.ardacolaker.com",
