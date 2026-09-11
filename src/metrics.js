@@ -3,8 +3,7 @@
    ========================================= */
 
 function toFiniteNumber(value) {
-  const number =
-    Number(value);
+  const number = Number(value);
 
   return Number.isFinite(number)
     ? number
@@ -103,6 +102,17 @@ export function buildDerivedMetrics(
     );
 
 
+  const currentEPS =
+    factValue(
+      current.dilutedEPS
+    );
+
+  const previousEPS =
+    factValue(
+      previous?.dilutedEPS
+    );
+
+
   const netIncome =
     factValue(
       current.netIncome
@@ -130,6 +140,13 @@ export function buildDerivedMetrics(
     percentageGrowth(
       currentRevenue,
       previousRevenue
+    );
+
+
+  const epsGrowth =
+    percentageGrowth(
+      currentEPS,
+      previousEPS
     );
 
 
@@ -183,6 +200,18 @@ export function buildDerivedMetrics(
 
       formula:
         "(Current Revenue / Previous Revenue - 1) × 100"
+    },
+
+
+    epsGrowth: {
+      value:
+        epsGrowth,
+
+      unit:
+        "percent",
+
+      formula:
+        "(Current Diluted EPS / Previous Diluted EPS - 1) × 100"
     },
 
 
