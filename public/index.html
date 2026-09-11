@@ -1224,6 +1224,213 @@
         grid-template-columns: 1fr 1fr;
       }
     }
+    /* =========================================
+   V2.2 — FINAL DESKTOP POLISH
+   ========================================= */
+
+/* Slightly tighter product-first hero */
+.hero {
+  padding-top: 42px;
+  padding-bottom: 20px;
+}
+
+.hero-inner {
+  max-width: 810px;
+}
+
+.hero h1 {
+  max-width: 720px;
+  font-size: clamp(40px, 4.4vw, 58px);
+  line-height: 1.01;
+}
+
+.hero-copy {
+  max-width: 570px;
+  margin-top: 15px;
+  color: #939dad;
+}
+
+.search-panel {
+  margin-top: 22px;
+}
+
+/* Bring the actual product closer to the first viewport */
+.dashboard {
+  padding-top: 16px;
+  padding-bottom: 36px;
+}
+
+.stock-header {
+  min-height: 82px;
+}
+
+/* Slightly richer surface hierarchy */
+.card {
+  background: #0b0f14;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.metric-card {
+  background: #0a0e13;
+}
+
+.card,
+.metric-card {
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+@media (hover: hover) {
+  .card:hover,
+  .metric-card:hover {
+    border-color: rgba(255, 255, 255, 0.105);
+  }
+}
+
+/* Better secondary-text readability */
+.company-meta,
+.metric-name,
+.ai-summary,
+.case-item,
+.factor-name,
+.signal-row {
+  color: #8f99a9;
+}
+
+.metric-context,
+.market-meta {
+  color: #717b8b;
+}
+
+.research-note {
+  color: #7f8999;
+}
+
+.research-note strong {
+  color: #aeb6c1;
+}
+
+/* Disabled navigation should remain readable */
+.nav-link:disabled {
+  opacity: 0.72;
+  color: #596271;
+}
+
+/* Reserve dedicated space for chart Y-axis labels */
+.chart-area svg {
+  width: calc(100% - 46px);
+}
+
+.chart-axis {
+  width: 40px;
+  right: 0;
+  align-items: flex-end;
+}
+
+.chart-bottom-axis {
+  padding-right: 46px;
+}
+
+/* Cleaner chart edge */
+.chart-area::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 40px;
+  bottom: 0;
+  width: 18px;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 15, 20, 0),
+      rgba(11, 15, 20, 0.35)
+    );
+}
+
+/* More balanced AI card */
+.score-wrap {
+  margin-top: 21px;
+  margin-bottom: 16px;
+}
+
+.score-ring {
+  width: 134px;
+  height: 134px;
+}
+
+.ai-summary {
+  line-height: 1.68;
+}
+
+/* Slightly cleaner lower cards */
+.case-list {
+  max-width: 90%;
+}
+
+.factor-track {
+  background: rgba(255, 255, 255, 0.075);
+}
+
+/* Reduce unnecessary empty space at the bottom */
+.site-footer {
+  padding-bottom: 22px;
+}
+
+.footer-inner {
+  padding-top: 15px;
+}
+
+/* Proper keyboard focus */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(97, 230, 173, 0.75);
+  outline-offset: 3px;
+}
+
+/* Preserve comfortable mobile spacing */
+@media (max-width: 700px) {
+  .hero {
+    padding-top: 36px;
+    padding-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: 40px;
+  }
+
+  .dashboard {
+    padding-top: 14px;
+    padding-bottom: 30px;
+  }
+
+  .chart-area svg {
+    width: calc(100% - 38px);
+  }
+
+  .chart-axis {
+    width: 34px;
+  }
+
+  .chart-bottom-axis {
+    padding-right: 38px;
+  }
+
+  .case-list {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 36px;
+  }
+}
   </style>
 </head>
 
