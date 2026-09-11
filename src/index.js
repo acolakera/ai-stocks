@@ -1471,8 +1471,8 @@ async function handleAnalysis(
       generated?.meta?.source ??
       "SEC EDGAR annual fundamentals",
 
-    methodology:
-      "AI-generated fundamental research based only on supplied SEC annual financial data"
+   methodology:
+  "Deterministic fundamental scoring with AI-generated narrative based only on supplied SEC annual financial data"
   };
 
 
