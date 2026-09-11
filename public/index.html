@@ -16,31 +16,29 @@
   <style>
     :root {
       --bg: #07090d;
-      --bg-elevated: #0a0d12;
-      --surface: rgba(255, 255, 255, 0.035);
-      --surface-hover: rgba(255, 255, 255, 0.05);
+      --surface: #0c1015;
+      --surface-2: #0e1218;
+      --surface-soft: rgba(255, 255, 255, 0.025);
 
       --border: rgba(255, 255, 255, 0.075);
       --border-strong: rgba(255, 255, 255, 0.12);
 
-      --text: #f4f7fb;
-      --text-soft: #c6cbd4;
-      --muted: #7e8798;
-      --muted-2: #596170;
+      --text: #f2f5f8;
+      --text-soft: #c8ced8;
+      --muted: #8b95a6;
+      --muted-2: #626c7c;
 
-      --positive: #5de5aa;
-      --positive-soft: rgba(93, 229, 170, 0.1);
+      --green: #61e6ad;
+      --green-soft: rgba(97, 230, 173, 0.1);
 
-      --negative: #ff7183;
-      --negative-soft: rgba(255, 113, 131, 0.1);
-
-      --neutral: #a8b2c1;
+      --red: #ff7486;
+      --red-soft: rgba(255, 116, 134, 0.1);
 
       --radius-sm: 10px;
-      --radius-md: 16px;
-      --radius-lg: 22px;
+      --radius-md: 15px;
+      --radius-lg: 20px;
 
-      --container: 1380px;
+      --container: 1440px;
     }
 
     * {
@@ -50,20 +48,22 @@
     }
 
     html {
-      scroll-behavior: smooth;
       background: var(--bg);
+      scroll-behavior: smooth;
     }
 
     body {
       min-height: 100vh;
-      color: var(--text);
+
       background:
         radial-gradient(
-          circle at 50% -20%,
-          rgba(93, 229, 170, 0.055),
-          transparent 34%
+          circle at 50% -18%,
+          rgba(97, 230, 173, 0.045),
+          transparent 30%
         ),
         var(--bg);
+
+      color: var(--text);
 
       font-family:
         Inter,
@@ -99,28 +99,26 @@
     }
 
     .container {
-      width: min(calc(100% - 40px), var(--container));
+      width: min(calc(100% - 48px), var(--container));
       margin: 0 auto;
     }
 
-    /* =========================
-       HEADER
-       ========================= */
+    /* HEADER */
 
     .site-header {
       position: sticky;
       top: 0;
       z-index: 100;
 
-      border-bottom: 1px solid var(--border);
-
-      background: rgba(7, 9, 13, 0.86);
+      background: rgba(7, 9, 13, 0.9);
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
+
+      border-bottom: 1px solid var(--border);
     }
 
     .nav-shell {
-      min-height: 68px;
+      height: 64px;
 
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -137,23 +135,25 @@
 
       gap: 10px;
 
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: -0.03em;
+
+      letter-spacing: -0.025em;
     }
 
     .brand-mark {
-      width: 31px;
-      height: 31px;
+      width: 32px;
+      height: 32px;
 
       display: grid;
       place-items: center;
 
-      border: 1px solid rgba(93, 229, 170, 0.24);
+      border: 1px solid rgba(97, 230, 173, 0.22);
       border-radius: 9px;
 
-      background: rgba(93, 229, 170, 0.09);
+      background: rgba(97, 230, 173, 0.08);
 
-      color: var(--positive);
+      color: var(--green);
     }
 
     .brand-mark svg {
@@ -161,59 +161,43 @@
       height: 17px;
     }
 
-    .brand-name {
-      font-size: 16px;
-    }
-
     .main-nav {
       display: flex;
       align-items: center;
-      justify-content: center;
 
-      gap: 6px;
+      gap: 4px;
     }
 
     .nav-link {
-      padding: 8px 11px;
+      padding: 8px 12px;
 
       border: 0;
       border-radius: 8px;
 
       background: transparent;
 
-      color: var(--muted);
+      color: var(--muted-2);
 
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 12px;
+      font-weight: 600;
 
       transition:
-        background 160ms ease,
-        color 160ms ease;
+        color 150ms ease,
+        background 150ms ease;
     }
 
     .nav-link.active {
       color: var(--text);
 
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .nav-link:not(:disabled):hover {
-      color: var(--text);
-
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.055);
     }
 
     .nav-link:disabled {
-      opacity: 0.45;
+      opacity: 0.58;
     }
 
     .nav-right {
       justify-self: end;
-
-      display: flex;
-      align-items: center;
-
-      gap: 10px;
     }
 
     .status-chip {
@@ -229,8 +213,8 @@
 
       color: var(--muted);
 
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 650;
     }
 
     .status-dot {
@@ -239,79 +223,90 @@
 
       border-radius: 50%;
 
-      background: var(--positive);
-      box-shadow: 0 0 12px rgba(93, 229, 170, 0.45);
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(97, 230, 173, 0.45);
     }
 
-    /* =========================
-       HERO / SEARCH
-       ========================= */
+    /* HERO */
 
     .hero {
-      padding: 68px 0 34px;
+      padding: 50px 0 28px;
     }
 
     .hero-inner {
-      max-width: 900px;
+      max-width: 850px;
       margin: 0 auto;
 
       text-align: center;
     }
 
     .hero-kicker {
-      margin-bottom: 17px;
+      margin-bottom: 14px;
 
-      color: var(--positive);
+      color: var(--green);
 
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 750;
 
-      letter-spacing: 0.13em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
     .hero h1 {
-      max-width: 820px;
+      max-width: 760px;
       margin: 0 auto;
 
-      font-size: clamp(42px, 5vw, 66px);
-      line-height: 1;
-
-      letter-spacing: -0.052em;
+      font-size: clamp(42px, 4.7vw, 62px);
+      line-height: 1.02;
 
       font-weight: 730;
+
+      letter-spacing: -0.05em;
     }
 
     .hero-copy {
-      max-width: 610px;
-      margin: 20px auto 0;
+      max-width: 590px;
+      margin: 17px auto 0;
 
       color: var(--muted);
 
-      font-size: 16px;
+      font-size: 14px;
       line-height: 1.7;
     }
 
+    /* SEARCH */
+
     .search-panel {
-      max-width: 720px;
-      margin: 32px auto 0;
+      max-width: 700px;
+      margin: 25px auto 0;
     }
 
     .search-box {
+      min-height: 59px;
+
       display: flex;
       align-items: center;
 
       gap: 8px;
 
-      padding: 7px;
+      padding: 6px;
 
       border: 1px solid var(--border-strong);
       border-radius: 14px;
 
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(255, 255, 255, 0.025);
 
       box-shadow:
-        0 28px 70px rgba(0, 0, 0, 0.28);
+        0 20px 55px rgba(0, 0, 0, 0.22);
+
+      transition:
+        border-color 160ms ease,
+        background 160ms ease;
+    }
+
+    .search-box:focus-within {
+      border-color: rgba(97, 230, 173, 0.25);
+      background: rgba(255, 255, 255, 0.035);
     }
 
     .search-icon {
@@ -324,15 +319,15 @@
     }
 
     .search-icon svg {
-      width: 18px;
-      height: 18px;
+      width: 17px;
+      height: 17px;
     }
 
     .search-box input {
       flex: 1;
       min-width: 0;
 
-      padding: 12px 2px;
+      padding: 10px 0;
 
       border: 0;
       outline: 0;
@@ -340,28 +335,30 @@
       color: var(--text);
       background: transparent;
 
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .search-box input::placeholder {
-      color: var(--muted-2);
+      color: #626b79;
     }
 
     .search-button {
-      padding: 11px 17px;
+      min-width: 91px;
+
+      padding: 11px 15px;
 
       border: 0;
-      border-radius: 10px;
+      border-radius: 9px;
 
-      background: #f4f7fb;
-      color: #07090d;
+      background: #f2f5f8;
+      color: #090b0f;
 
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 750;
 
       transition:
-        transform 150ms ease,
-        opacity 150ms ease;
+        transform 140ms ease,
+        opacity 140ms ease;
     }
 
     .search-button:hover {
@@ -373,14 +370,14 @@
     }
 
     .quick-search {
-      margin-top: 12px;
+      margin-top: 10px;
 
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
 
-      gap: 7px;
+      gap: 6px;
     }
 
     .quick-label {
@@ -388,7 +385,7 @@
 
       color: var(--muted-2);
 
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .ticker-chip {
@@ -401,13 +398,13 @@
 
       color: var(--muted);
 
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 650;
 
       transition:
         color 140ms ease,
-        background 140ms ease,
-        border-color 140ms ease;
+        border-color 140ms ease,
+        background 140ms ease;
     }
 
     .ticker-chip:hover {
@@ -418,12 +415,10 @@
       background: rgba(255, 255, 255, 0.035);
     }
 
-    /* =========================
-       DASHBOARD
-       ========================= */
+    /* DASHBOARD */
 
     .dashboard {
-      padding: 26px 0 76px;
+      padding: 22px 0 64px;
     }
 
     .dashboard-shell {
@@ -431,13 +426,13 @@
     }
 
     .stock-header {
-      padding: 25px 0 20px;
+      min-height: 90px;
 
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      gap: 30px;
+      gap: 28px;
     }
 
     .company-block {
@@ -455,11 +450,9 @@
       place-items: center;
 
       border: 1px solid var(--border);
-      border-radius: 13px;
+      border-radius: 12px;
 
-      background: rgba(255, 255, 255, 0.045);
-
-      color: var(--text);
+      background: var(--surface);
 
       font-size: 17px;
       font-weight: 750;
@@ -474,7 +467,7 @@
     }
 
     .company-name {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 690;
 
       letter-spacing: -0.035em;
@@ -488,16 +481,16 @@
 
       color: var(--muted);
 
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 9px;
+      font-weight: 750;
     }
 
     .company-meta {
-      margin-top: 3px;
+      margin-top: 4px;
 
       color: var(--muted);
 
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .market-price {
@@ -513,49 +506,47 @@
     }
 
     .price {
-      font-size: 29px;
+      font-size: 28px;
       font-weight: 720;
 
       letter-spacing: -0.045em;
     }
 
-    .change-positive {
-      color: var(--positive);
+    .price-change {
+      color: var(--green);
 
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 750;
     }
 
     .market-meta {
-      margin-top: 2px;
+      margin-top: 3px;
 
       color: var(--muted-2);
 
-      font-size: 10px;
+      font-size: 9px;
     }
 
-    /* =========================
-       CARDS
-       ========================= */
+    /* CARD SYSTEM */
 
     .card {
+      overflow: hidden;
+
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
 
       background: var(--surface);
-
-      overflow: hidden;
     }
 
     .card-inner {
-      padding: 20px;
+      padding: 21px;
     }
 
     .section-eyebrow {
-      color: var(--muted-2);
+      color: #747f90;
 
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 750;
 
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -564,25 +555,25 @@
     .section-title {
       margin-top: 4px;
 
+      color: var(--text);
+
       font-size: 14px;
       font-weight: 650;
-
-      letter-spacing: -0.015em;
     }
 
     .top-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.62fr);
+      grid-template-columns:
+        minmax(0, 1.75fr)
+        minmax(310px, 0.62fr);
 
       gap: 14px;
     }
 
-    /* =========================
-       CHART
-       ========================= */
+    /* CHART */
 
     .chart-card {
-      min-height: 432px;
+      min-height: 430px;
     }
 
     .chart-header {
@@ -595,7 +586,6 @@
 
     .chart-periods {
       display: flex;
-      align-items: center;
 
       gap: 3px;
     }
@@ -609,25 +599,34 @@
       border-radius: 7px;
 
       background: transparent;
+
       color: var(--muted-2);
 
-      font-size: 10px;
-      font-weight: 650;
+      font-size: 9px;
+      font-weight: 700;
+
+      transition:
+        color 130ms ease,
+        background 130ms ease;
+    }
+
+    .period-button:hover {
+      color: var(--text-soft);
     }
 
     .period-button.active {
       color: var(--text);
 
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.065);
     }
 
     .chart-stats {
-      margin-top: 20px;
+      margin-top: 19px;
 
       display: flex;
       align-items: baseline;
 
-      gap: 9px;
+      gap: 10px;
     }
 
     .chart-price {
@@ -638,10 +637,10 @@
     }
 
     .chart-change {
-      color: var(--positive);
+      color: var(--green);
 
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 750;
     }
 
     .chart-area {
@@ -649,7 +648,7 @@
 
       height: 277px;
 
-      margin-top: 4px;
+      margin-top: 5px;
     }
 
     .chart-area svg {
@@ -659,18 +658,23 @@
       display: block;
     }
 
+    #chartLine,
+    #chartAreaPath {
+      transition: d 260ms ease;
+    }
+
     .chart-axis {
       position: absolute;
 
-      top: 14px;
+      top: 11px;
       right: 0;
-      bottom: 5px;
+      bottom: 2px;
 
       display: flex;
       flex-direction: column;
       justify-content: space-between;
 
-      color: var(--muted-2);
+      color: #667181;
 
       font-size: 9px;
 
@@ -680,30 +684,28 @@
     .chart-bottom-axis {
       margin-top: 7px;
 
+      padding-right: 38px;
+
       display: flex;
       justify-content: space-between;
 
-      padding-right: 38px;
-
-      color: var(--muted-2);
+      color: #667181;
 
       font-size: 9px;
     }
 
-    /* =========================
-       AI VIEW
-       ========================= */
+    /* AI */
 
     .ai-card {
-      min-height: 432px;
+      min-height: 430px;
     }
 
-    .ai-top-row {
+    .ai-top {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
 
-      gap: 12px;
+      gap: 10px;
     }
 
     .demo-tag {
@@ -714,20 +716,20 @@
 
       color: var(--muted);
 
-      font-size: 9px;
-      font-weight: 650;
+      font-size: 8px;
+      font-weight: 700;
     }
 
-    .ai-score-wrap {
-      margin: 25px 0 18px;
+    .score-wrap {
+      margin: 24px 0 18px;
 
       display: grid;
       place-items: center;
     }
 
     .score-ring {
-      width: 142px;
-      height: 142px;
+      width: 138px;
+      height: 138px;
 
       display: grid;
       place-items: center;
@@ -737,11 +739,11 @@
       background:
         radial-gradient(
           circle,
-          #0b0e13 61%,
-          transparent 62%
+          #0b0f14 60%,
+          transparent 61%
         ),
         conic-gradient(
-          var(--positive) 0deg 284deg,
+          var(--green) 0deg 284deg,
           rgba(255, 255, 255, 0.075) 284deg 360deg
         );
     }
@@ -751,10 +753,10 @@
     }
 
     .score-number {
-      font-size: 39px;
+      font-size: 38px;
       line-height: 1;
 
-      font-weight: 750;
+      font-weight: 760;
 
       letter-spacing: -0.05em;
     }
@@ -762,20 +764,20 @@
     .score-caption {
       margin-top: 5px;
 
-      color: var(--positive);
+      color: var(--green);
 
-      font-size: 9px;
-      font-weight: 750;
+      font-size: 8px;
+      font-weight: 800;
 
-      letter-spacing: 0.09em;
+      letter-spacing: 0.13em;
       text-transform: uppercase;
     }
 
-    .ai-view-label {
+    .ai-heading {
       color: var(--text-soft);
 
       font-size: 11px;
-      font-weight: 650;
+      font-weight: 700;
     }
 
     .ai-summary {
@@ -783,34 +785,44 @@
 
       color: var(--muted);
 
-      font-size: 12px;
-      line-height: 1.7;
+      font-size: 11px;
+      line-height: 1.72;
     }
 
-    .confidence-row {
-      margin-top: 18px;
-      padding-top: 15px;
+    .ai-signals {
+      margin-top: 16px;
+      padding-top: 14px;
 
       border-top: 1px solid var(--border);
 
+      display: grid;
+
+      gap: 9px;
+    }
+
+    .signal-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
 
-      color: var(--muted-2);
+      gap: 15px;
 
-      font-size: 10px;
+      color: var(--muted);
+
+      font-size: 9px;
     }
 
-    .confidence-value {
+    .signal-value {
       color: var(--text-soft);
 
-      font-weight: 650;
+      font-weight: 700;
     }
 
-    /* =========================
-       METRICS
-       ========================= */
+    .signal-value.positive {
+      color: var(--green);
+    }
+
+    /* METRICS */
 
     .metrics-grid {
       margin-top: 14px;
@@ -822,68 +834,69 @@
     }
 
     .metric-card {
-      min-height: 104px;
+      min-height: 107px;
 
-      padding: 15px;
+      padding: 16px;
 
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 11px;
 
-      background: rgba(255, 255, 255, 0.025);
+      background: var(--surface-soft);
     }
 
     .metric-name {
       color: var(--muted);
 
       font-size: 10px;
+      font-weight: 500;
     }
 
     .metric-value {
       margin-top: 7px;
 
-      color: var(--text);
-
       font-size: 18px;
-      font-weight: 680;
+      font-weight: 690;
 
       letter-spacing: -0.025em;
     }
 
     .metric-context {
-      margin-top: 4px;
+      margin-top: 5px;
 
-      color: var(--muted-2);
+      color: #667181;
 
       font-size: 9px;
     }
 
-    /* =========================
-       LOWER GRID
-       ========================= */
+    /* LOWER */
 
     .lower-grid {
       margin-top: 14px;
 
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(330px, 0.72fr);
+      grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(330px, 0.72fr);
 
       gap: 14px;
     }
 
-    .case-card {
-      min-height: 250px;
+    .case-card,
+    .factor-card {
+      min-height: 257px;
     }
 
     .case-heading {
       display: flex;
       align-items: center;
 
-      gap: 9px;
+      gap: 10px;
     }
 
     .case-icon {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
 
       display: grid;
       place-items: center;
@@ -891,28 +904,33 @@
       border-radius: 7px;
 
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .bull .case-icon {
-      color: var(--positive);
-      background: var(--positive-soft);
+      color: var(--green);
+      background: var(--green-soft);
     }
 
     .bear .case-icon {
-      color: var(--negative);
-      background: var(--negative-soft);
+      color: var(--red);
+      background: var(--red-soft);
     }
 
     .case-title {
+      margin-top: 2px;
+
       font-size: 13px;
-      font-weight: 650;
+      font-weight: 680;
     }
 
     .case-list {
+      max-width: 92%;
+
       margin-top: 18px;
 
       display: grid;
+
       gap: 14px;
     }
 
@@ -938,31 +956,26 @@
     }
 
     .bull .case-dot {
-      background: var(--positive);
+      background: var(--green);
     }
 
     .bear .case-dot {
-      background: var(--negative);
+      background: var(--red);
     }
 
-    /* =========================
-       FACTOR SCORES
-       ========================= */
-
-    .factor-card {
-      min-height: 250px;
-    }
+    /* FACTORS */
 
     .factor-list {
-      margin-top: 18px;
+      margin-top: 19px;
 
       display: grid;
+
       gap: 15px;
     }
 
     .factor-row {
       display: grid;
-      grid-template-columns: 104px 1fr 28px;
+      grid-template-columns: 105px 1fr 27px;
 
       align-items: center;
 
@@ -972,17 +985,17 @@
     .factor-name {
       color: var(--muted);
 
-      font-size: 10px;
+      font-size: 9px;
     }
 
     .factor-track {
       height: 5px;
 
-      border-radius: 999px;
-
       overflow: hidden;
 
-      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+
+      background: rgba(255, 255, 255, 0.065);
     }
 
     .factor-fill {
@@ -990,7 +1003,7 @@
 
       border-radius: inherit;
 
-      background: var(--positive);
+      background: var(--green);
     }
 
     .factor-score {
@@ -998,13 +1011,11 @@
 
       color: var(--text-soft);
 
-      font-size: 10px;
-      font-weight: 650;
+      font-size: 9px;
+      font-weight: 700;
     }
 
-    /* =========================
-       DISCLAIMER
-       ========================= */
+    /* NOTE */
 
     .research-note {
       margin-top: 14px;
@@ -1012,27 +1023,25 @@
       padding: 14px 16px;
 
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 11px;
 
       background: rgba(255, 255, 255, 0.018);
 
-      color: var(--muted-2);
+      color: #768191;
 
       font-size: 10px;
-      line-height: 1.6;
+      line-height: 1.55;
     }
 
     .research-note strong {
-      color: var(--muted);
-      font-weight: 650;
+      color: #a1aab7;
+      font-weight: 700;
     }
 
-    /* =========================
-       FOOTER
-       ========================= */
+    /* FOOTER */
 
     .site-footer {
-      padding: 0 0 38px;
+      padding-bottom: 28px;
     }
 
     .footer-inner {
@@ -1046,38 +1055,38 @@
 
       gap: 20px;
 
-      color: var(--muted-2);
+      color: #6f7988;
 
       font-size: 10px;
     }
 
-    /* =========================
-       TOAST
-       ========================= */
+    /* TOAST */
 
     .toast {
       position: fixed;
+
       right: 20px;
       bottom: 20px;
       z-index: 200;
 
-      max-width: 330px;
+      max-width: 320px;
 
       padding: 12px 14px;
 
       border: 1px solid var(--border-strong);
-      border-radius: 12px;
+      border-radius: 11px;
 
-      background: rgba(12, 15, 21, 0.96);
+      background: rgba(12, 16, 21, 0.97);
 
       color: var(--text-soft);
 
       font-size: 11px;
 
       box-shadow:
-        0 18px 50px rgba(0, 0, 0, 0.38);
+        0 20px 55px rgba(0, 0, 0, 0.4);
 
       opacity: 0;
+
       transform: translateY(8px);
 
       pointer-events: none;
@@ -1092,9 +1101,7 @@
       transform: translateY(0);
     }
 
-    /* =========================
-       RESPONSIVE
-       ========================= */
+    /* RESPONSIVE */
 
     @media (max-width: 1120px) {
       .metrics-grid {
@@ -1131,10 +1138,6 @@
       .ai-card {
         min-height: auto;
       }
-
-      .stock-header {
-        align-items: flex-start;
-      }
     }
 
     @media (max-width: 700px) {
@@ -1142,26 +1145,29 @@
         width: min(calc(100% - 24px), var(--container));
       }
 
-      .hero {
-        padding-top: 48px;
-      }
-
-      .hero h1 {
-        font-size: 43px;
-      }
-
-      .hero-copy {
-        font-size: 14px;
-      }
-
       .status-chip {
         display: none;
       }
 
-      .stock-header {
-        flex-direction: column;
+      .hero {
+        padding-top: 40px;
+      }
 
-        gap: 15px;
+      .hero h1 {
+        font-size: 42px;
+      }
+
+      .hero-copy {
+        font-size: 13px;
+      }
+
+      .stock-header {
+        padding: 17px 0;
+
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 14px;
       }
 
       .market-price {
@@ -1188,25 +1194,14 @@
         grid-template-columns: 1fr;
       }
 
-      .chart-card {
-        min-height: 390px;
-      }
-
       .chart-area {
-        height: 235px;
-      }
-
-      .footer-inner {
-        align-items: flex-start;
-        flex-direction: column;
-
-        gap: 6px;
+        height: 230px;
       }
     }
 
     @media (max-width: 480px) {
       .hero h1 {
-        font-size: 38px;
+        font-size: 37px;
       }
 
       .search-icon {
@@ -1218,28 +1213,15 @@
       }
 
       .search-button {
-        padding-left: 14px;
-        padding-right: 14px;
-      }
-
-      .metrics-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .metric-card {
-        min-height: 96px;
+        min-width: 82px;
       }
 
       .card-inner {
         padding: 17px;
       }
 
-      .chart-periods {
-        gap: 0;
-      }
-
-      .period-button {
-        min-width: 30px;
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -1248,10 +1230,19 @@
 <body>
 
   <header class="site-header">
+
     <div class="container nav-shell">
 
-      <a class="brand" href="#">
-        <span class="brand-mark" aria-hidden="true">
+      <a
+        class="brand"
+        href="#"
+        aria-label="AI Stocks home"
+      >
+
+        <span
+          class="brand-mark"
+          aria-hidden="true"
+        >
 
           <svg
             viewBox="0 0 24 24"
@@ -1265,15 +1256,22 @@
 
         </span>
 
-        <span class="brand-name">
+        <span>
           AI Stocks
         </span>
+
       </a>
 
 
-      <nav class="main-nav" aria-label="Primary navigation">
+      <nav
+        class="main-nav"
+        aria-label="Primary navigation"
+      >
 
-        <button class="nav-link active" type="button">
+        <button
+          class="nav-link active"
+          type="button"
+        >
           Analyze
         </button>
 
@@ -1281,7 +1279,6 @@
           class="nav-link"
           type="button"
           disabled
-          title="Coming soon"
         >
           Screener
         </button>
@@ -1290,7 +1287,6 @@
           class="nav-link"
           type="button"
           disabled
-          title="Coming soon"
         >
           Compare
         </button>
@@ -1299,7 +1295,6 @@
           class="nav-link"
           type="button"
           disabled
-          title="Coming soon"
         >
           Watchlist
         </button>
@@ -1309,20 +1304,22 @@
 
       <div class="nav-right">
 
-        <div class="status-chip">
+        <span class="status-chip">
           <span class="status-dot"></span>
           Research preview
-        </div>
+        </span>
 
       </div>
 
     </div>
+
   </header>
 
 
   <main>
 
     <section class="hero">
+
       <div class="container">
 
         <div class="hero-inner">
@@ -1345,7 +1342,10 @@
 
             <div class="search-box">
 
-              <div class="search-icon" aria-hidden="true">
+              <div
+                class="search-icon"
+                aria-hidden="true"
+              >
 
                 <svg
                   viewBox="0 0 24 24"
@@ -1389,7 +1389,6 @@
 
               <button
                 class="ticker-chip"
-                type="button"
                 onclick="selectStock('AAPL')"
               >
                 AAPL
@@ -1397,7 +1396,6 @@
 
               <button
                 class="ticker-chip"
-                type="button"
                 onclick="selectStock('NVDA')"
               >
                 NVDA
@@ -1405,7 +1403,6 @@
 
               <button
                 class="ticker-chip"
-                type="button"
                 onclick="selectStock('MSFT')"
               >
                 MSFT
@@ -1413,7 +1410,6 @@
 
               <button
                 class="ticker-chip"
-                type="button"
                 onclick="selectStock('GOOGL')"
               >
                 GOOGL
@@ -1421,7 +1417,6 @@
 
               <button
                 class="ticker-chip"
-                type="button"
                 onclick="selectStock('AMZN')"
               >
                 AMZN
@@ -1434,6 +1429,7 @@
         </div>
 
       </div>
+
     </section>
 
 
@@ -1460,12 +1456,12 @@
 
               <div class="company-title-row">
 
-                <div
+                <span
                   class="company-name"
                   id="companyName"
                 >
                   Apple Inc.
-                </div>
+                </span>
 
                 <span
                   class="ticker-label"
@@ -1493,19 +1489,19 @@
 
             <div class="price-row">
 
-              <div
+              <span
                 class="price"
                 id="stockPrice"
               >
                 $231.28
-              </div>
+              </span>
 
-              <div
-                class="change-positive"
+              <span
+                class="price-change"
                 id="stockChange"
               >
                 +1.47%
-              </div>
+              </span>
 
             </div>
 
@@ -1539,42 +1535,39 @@
                 </div>
 
 
-                <div
-                  class="chart-periods"
-                  aria-label="Chart periods"
-                >
+                <div class="chart-periods">
 
                   <button
                     class="period-button"
-                    type="button"
+                    data-period="1D"
                   >
                     1D
                   </button>
 
                   <button
                     class="period-button"
-                    type="button"
+                    data-period="1W"
                   >
                     1W
                   </button>
 
                   <button
                     class="period-button"
-                    type="button"
+                    data-period="1M"
                   >
                     1M
                   </button>
 
                   <button
                     class="period-button active"
-                    type="button"
+                    data-period="1Y"
                   >
                     1Y
                   </button>
 
                   <button
                     class="period-button"
-                    type="button"
+                    data-period="5Y"
                   >
                     5Y
                   </button>
@@ -1624,13 +1617,13 @@
 
                       <stop
                         offset="0%"
-                        stop-color="#5de5aa"
+                        stop-color="#61e6ad"
                         stop-opacity="0.18"
                       />
 
                       <stop
                         offset="100%"
-                        stop-color="#5de5aa"
+                        stop-color="#61e6ad"
                         stop-opacity="0"
                       />
 
@@ -1645,7 +1638,6 @@
                     x2="900"
                     y2="50"
                     stroke="rgba(255,255,255,0.045)"
-                    stroke-width="1"
                   />
 
                   <line
@@ -1654,7 +1646,6 @@
                     x2="900"
                     y2="110"
                     stroke="rgba(255,255,255,0.045)"
-                    stroke-width="1"
                   />
 
                   <line
@@ -1663,7 +1654,6 @@
                     x2="900"
                     y2="170"
                     stroke="rgba(255,255,255,0.045)"
-                    stroke-width="1"
                   />
 
                   <line
@@ -1672,24 +1662,22 @@
                     x2="900"
                     y2="230"
                     stroke="rgba(255,255,255,0.045)"
-                    stroke-width="1"
                   />
 
 
                   <path
+                    id="chartAreaPath"
                     d="
-                      M0 226
-                      C36 210, 55 217, 83 204
-                      C112 192, 127 201, 158 186
-                      C188 171, 204 180, 233 168
-                      C264 154, 280 166, 310 145
-                      C342 124, 361 144, 390 131
-                      C421 116, 440 129, 471 112
-                      C500 96, 519 111, 550 95
-                      C578 80, 602 95, 629 78
-                      C660 59, 678 77, 706 62
-                      C736 46, 759 61, 789 43
-                      C820 25, 845 44, 900 18
+                      M0 225
+                      C38 205, 70 218, 105 191
+                      C143 162, 175 186, 214 156
+                      C250 129, 279 162, 319 138
+                      C356 117, 391 136, 426 107
+                      C460 80, 490 112, 526 94
+                      C562 76, 590 109, 625 75
+                      C662 39, 694 75, 731 56
+                      C770 36, 806 61, 843 36
+                      C865 22, 881 31, 900 18
                       L900 280
                       L0 280
                       Z
@@ -1699,23 +1687,22 @@
 
 
                   <path
+                    id="chartLine"
                     d="
-                      M0 226
-                      C36 210, 55 217, 83 204
-                      C112 192, 127 201, 158 186
-                      C188 171, 204 180, 233 168
-                      C264 154, 280 166, 310 145
-                      C342 124, 361 144, 390 131
-                      C421 116, 440 129, 471 112
-                      C500 96, 519 111, 550 95
-                      C578 80, 602 95, 629 78
-                      C660 59, 678 77, 706 62
-                      C736 46, 759 61, 789 43
-                      C820 25, 845 44, 900 18
+                      M0 225
+                      C38 205, 70 218, 105 191
+                      C143 162, 175 186, 214 156
+                      C250 129, 279 162, 319 138
+                      C356 117, 391 136, 426 107
+                      C460 80, 490 112, 526 94
+                      C562 76, 590 109, 625 75
+                      C662 39, 694 75, 731 56
+                      C770 36, 806 61, 843 36
+                      C865 22, 881 31, 900 18
                     "
                     fill="none"
-                    stroke="#5de5aa"
-                    stroke-width="2.4"
+                    stroke="#61e6ad"
+                    stroke-width="2.35"
                     stroke-linecap="round"
                   />
 
@@ -1750,7 +1737,7 @@
 
             <div class="card-inner">
 
-              <div class="ai-top-row">
+              <div class="ai-top">
 
                 <div>
 
@@ -1771,17 +1758,26 @@
               </div>
 
 
-              <div class="ai-score-wrap">
+              <div class="score-wrap">
 
-                <div class="score-ring">
+                <div
+                  class="score-ring"
+                  id="scoreRing"
+                >
 
                   <div class="score-content">
 
-                    <div class="score-number">
+                    <div
+                      class="score-number"
+                      id="aiScore"
+                    >
                       79
                     </div>
 
-                    <div class="score-caption">
+                    <div
+                      class="score-caption"
+                      id="aiRating"
+                    >
                       Positive
                     </div>
 
@@ -1792,26 +1788,72 @@
               </div>
 
 
-              <div class="ai-view-label">
+              <div
+                class="ai-heading"
+                id="aiHeading"
+              >
                 Constructive outlook
               </div>
 
-              <p class="ai-summary">
+
+              <p
+                class="ai-summary"
+                id="aiSummary"
+              >
                 Strong profitability and durable cash generation
                 support the investment case. Valuation remains the
                 primary constraint as expectations are already elevated.
               </p>
 
 
-              <div class="confidence-row">
+              <div class="ai-signals">
 
-                <span>
-                  Model confidence
-                </span>
+                <div class="signal-row">
 
-                <span class="confidence-value">
-                  82%
-                </span>
+                  <span>
+                    Overall view
+                  </span>
+
+                  <span
+                    class="signal-value positive"
+                    id="signalView"
+                  >
+                    Positive
+                  </span>
+
+                </div>
+
+
+                <div class="signal-row">
+
+                  <span>
+                    Model confidence
+                  </span>
+
+                  <span
+                    class="signal-value"
+                    id="confidenceValue"
+                  >
+                    82%
+                  </span>
+
+                </div>
+
+
+                <div class="signal-row">
+
+                  <span>
+                    Risk level
+                  </span>
+
+                  <span
+                    class="signal-value"
+                    id="riskLevel"
+                  >
+                    Moderate
+                  </span>
+
+                </div>
 
               </div>
 
@@ -1822,110 +1864,10 @@
         </div>
 
 
-        <div class="metrics-grid">
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              Market Cap
-            </div>
-
-            <div class="metric-value">
-              $3.5T
-            </div>
-
-            <div class="metric-context">
-              Equity value
-            </div>
-
-          </div>
-
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              P/E Ratio
-            </div>
-
-            <div class="metric-value">
-              35.2×
-            </div>
-
-            <div class="metric-context">
-              Forward
-            </div>
-
-          </div>
-
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              Revenue Growth
-            </div>
-
-            <div class="metric-value">
-              +6.1%
-            </div>
-
-            <div class="metric-context">
-              Year over year
-            </div>
-
-          </div>
-
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              EPS Growth
-            </div>
-
-            <div class="metric-value">
-              +8.4%
-            </div>
-
-            <div class="metric-context">
-              Year over year
-            </div>
-
-          </div>
-
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              FCF Margin
-            </div>
-
-            <div class="metric-value">
-              26.8%
-            </div>
-
-            <div class="metric-context">
-              Trailing twelve months
-            </div>
-
-          </div>
-
-
-          <div class="metric-card">
-
-            <div class="metric-name">
-              ROE
-            </div>
-
-            <div class="metric-value">
-              157%
-            </div>
-
-            <div class="metric-context">
-              Return on equity
-            </div>
-
-          </div>
-
-        </div>
+        <div
+          class="metrics-grid"
+          id="metricsGrid"
+        ></div>
 
 
         <div class="lower-grid">
@@ -1955,44 +1897,10 @@
               </div>
 
 
-              <div class="case-list">
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    High free cash flow generation supports buybacks,
-                    strategic investment and long-term capital flexibility.
-                  </span>
-
-                </div>
-
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    Ecosystem strength creates durable customer retention
-                    and recurring services revenue.
-                  </span>
-
-                </div>
-
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    Services mix expansion may continue supporting
-                    company-wide margin resilience.
-                  </span>
-
-                </div>
-
-              </div>
+              <div
+                class="case-list"
+                id="bullList"
+              ></div>
 
             </div>
 
@@ -2024,44 +1932,10 @@
               </div>
 
 
-              <div class="case-list">
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    Premium valuation reduces the margin of safety if
-                    future earnings growth disappoints.
-                  </span>
-
-                </div>
-
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    Mature hardware categories may limit long-term
-                    unit growth without major new product cycles.
-                  </span>
-
-                </div>
-
-
-                <div class="case-item">
-
-                  <span class="case-dot"></span>
-
-                  <span>
-                    Regulatory pressure remains a potential risk to
-                    high-margin platform and services economics.
-                  </span>
-
-                </div>
-
-              </div>
+              <div
+                class="case-list"
+                id="bearList"
+              ></div>
 
             </div>
 
@@ -2081,128 +1955,10 @@
               </div>
 
 
-              <div class="factor-list">
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Financial Health
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 91%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    91
-                  </span>
-
-                </div>
-
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Profitability
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 94%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    94
-                  </span>
-
-                </div>
-
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Growth
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 72%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    72
-                  </span>
-
-                </div>
-
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Valuation
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 61%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    61
-                  </span>
-
-                </div>
-
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Momentum
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 83%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    83
-                  </span>
-
-                </div>
-
-
-                <div class="factor-row">
-
-                  <span class="factor-name">
-                    Risk
-                  </span>
-
-                  <div class="factor-track">
-                    <div
-                      class="factor-fill"
-                      style="width: 68%"
-                    ></div>
-                  </div>
-
-                  <span class="factor-score">
-                    68
-                  </span>
-
-                </div>
-
-              </div>
+              <div
+                class="factor-list"
+                id="factorList"
+              ></div>
 
             </div>
 
@@ -2212,13 +1968,19 @@
 
 
         <div class="research-note">
-          <strong>Research preview.</strong>
-          Financial figures, prices and AI outputs shown on this page are
-          demonstration data and are not investment recommendations.
+
+          <strong>
+            Research preview.
+          </strong>
+
+          Financial figures, prices and AI outputs shown on this page
+          are demonstration data and are not investment recommendations.
           Live financial data will be connected in a later release.
+
         </div>
 
       </div>
+
     </section>
 
   </main>
@@ -2257,7 +2019,46 @@
         price: "$231.28",
         change: "+1.47%",
         yearly: "+18.62% 1Y",
-        logo: "A"
+        logo: "A",
+
+        score: 79,
+        rating: "Positive",
+        heading: "Constructive outlook",
+        confidence: "82%",
+        risk: "Moderate",
+
+        summary:
+          "Strong profitability and durable cash generation support the investment case. Valuation remains the primary constraint as expectations are already elevated.",
+
+        metrics: [
+          ["Market Cap", "$3.5T", "Equity value"],
+          ["P/E Ratio", "35.2×", "Forward"],
+          ["Revenue Growth", "+6.1%", "Year over year"],
+          ["EPS Growth", "+8.4%", "Year over year"],
+          ["FCF Margin", "26.8%", "Trailing twelve months"],
+          ["ROE", "157%", "Return on equity"]
+        ],
+
+        bull: [
+          "High free cash flow generation supports buybacks, strategic investment and long-term capital flexibility.",
+          "Ecosystem strength creates durable customer retention and recurring services revenue.",
+          "Services mix expansion may continue supporting company-wide margin resilience."
+        ],
+
+        bear: [
+          "Premium valuation reduces the margin of safety if future earnings growth disappoints.",
+          "Mature hardware categories may limit long-term unit growth without major new product cycles.",
+          "Regulatory pressure remains a potential risk to high-margin platform and services economics."
+        ],
+
+        factors: {
+          "Financial Health": 91,
+          "Profitability": 94,
+          "Growth": 72,
+          "Valuation": 61,
+          "Momentum": 83,
+          "Risk": 68
+        }
       },
 
       NVDA: {
@@ -2266,7 +2067,46 @@
         price: "$119.14",
         change: "+2.31%",
         yearly: "+42.18% 1Y",
-        logo: "N"
+        logo: "N",
+
+        score: 86,
+        rating: "Positive",
+        heading: "Strong growth profile",
+        confidence: "85%",
+        risk: "Elevated",
+
+        summary:
+          "Exceptional earnings momentum and AI infrastructure demand support the outlook, while valuation and concentration risk remain important considerations.",
+
+        metrics: [
+          ["Market Cap", "$2.9T", "Equity value"],
+          ["P/E Ratio", "32.8×", "Forward"],
+          ["Revenue Growth", "+78.0%", "Year over year"],
+          ["EPS Growth", "+95.0%", "Year over year"],
+          ["FCF Margin", "44.2%", "Trailing twelve months"],
+          ["ROE", "91%", "Return on equity"]
+        ],
+
+        bull: [
+          "AI infrastructure demand remains a powerful structural growth driver.",
+          "High margins and accelerating cash generation provide substantial reinvestment capacity.",
+          "Software and ecosystem advantages strengthen competitive positioning."
+        ],
+
+        bear: [
+          "Premium expectations increase downside sensitivity to slower growth.",
+          "Customer concentration may amplify earnings volatility.",
+          "Competitive pressure and custom silicon could reduce future market share."
+        ],
+
+        factors: {
+          "Financial Health": 95,
+          "Profitability": 97,
+          "Growth": 98,
+          "Valuation": 57,
+          "Momentum": 92,
+          "Risk": 60
+        }
       },
 
       MSFT: {
@@ -2275,7 +2115,46 @@
         price: "$507.42",
         change: "+0.88%",
         yearly: "+23.74% 1Y",
-        logo: "M"
+        logo: "M",
+
+        score: 84,
+        rating: "Positive",
+        heading: "High-quality compounder",
+        confidence: "87%",
+        risk: "Moderate",
+
+        summary:
+          "Diversified recurring revenue, cloud leadership and strong balance-sheet quality support a durable long-term investment profile.",
+
+        metrics: [
+          ["Market Cap", "$3.8T", "Equity value"],
+          ["P/E Ratio", "31.6×", "Forward"],
+          ["Revenue Growth", "+14.7%", "Year over year"],
+          ["EPS Growth", "+16.2%", "Year over year"],
+          ["FCF Margin", "29.4%", "Trailing twelve months"],
+          ["ROE", "34%", "Return on equity"]
+        ],
+
+        bull: [
+          "Azure and AI services provide durable enterprise growth opportunities.",
+          "Recurring software revenue improves earnings visibility and resilience.",
+          "Strong balance-sheet quality supports sustained capital allocation."
+        ],
+
+        bear: [
+          "Premium valuation requires sustained double-digit earnings growth.",
+          "Heavy AI infrastructure spending may pressure near-term free cash flow.",
+          "Regulatory scrutiny remains a structural risk across major markets."
+        ],
+
+        factors: {
+          "Financial Health": 96,
+          "Profitability": 93,
+          "Growth": 84,
+          "Valuation": 64,
+          "Momentum": 82,
+          "Risk": 76
+        }
       },
 
       GOOGL: {
@@ -2284,7 +2163,46 @@
         price: "$236.71",
         change: "+1.12%",
         yearly: "+27.09% 1Y",
-        logo: "G"
+        logo: "G",
+
+        score: 82,
+        rating: "Positive",
+        heading: "Attractive quality profile",
+        confidence: "84%",
+        risk: "Moderate",
+
+        summary:
+          "Advertising strength, cloud growth and balance-sheet flexibility support the outlook, while AI disruption and regulation remain key uncertainties.",
+
+        metrics: [
+          ["Market Cap", "$2.9T", "Equity value"],
+          ["P/E Ratio", "24.7×", "Forward"],
+          ["Revenue Growth", "+13.6%", "Year over year"],
+          ["EPS Growth", "+18.9%", "Year over year"],
+          ["FCF Margin", "27.1%", "Trailing twelve months"],
+          ["ROE", "31%", "Return on equity"]
+        ],
+
+        bull: [
+          "Search economics remain highly profitable with substantial scale advantages.",
+          "Cloud growth provides an increasingly meaningful second earnings engine.",
+          "Large cash reserves create flexibility for AI investment and capital returns."
+        ],
+
+        bear: [
+          "Generative AI may alter traditional search behavior and monetization.",
+          "Antitrust actions could affect distribution and advertising economics.",
+          "AI infrastructure spending may reduce near-term margin expansion."
+        ],
+
+        factors: {
+          "Financial Health": 97,
+          "Profitability": 91,
+          "Growth": 82,
+          "Valuation": 76,
+          "Momentum": 84,
+          "Risk": 71
+        }
       },
 
       AMZN: {
@@ -2293,9 +2211,124 @@
         price: "$231.55",
         change: "+0.69%",
         yearly: "+19.45% 1Y",
-        logo: "A"
+        logo: "A",
+
+        score: 80,
+        rating: "Positive",
+        heading: "Improving earnings quality",
+        confidence: "81%",
+        risk: "Moderate",
+
+        summary:
+          "AWS growth, retail efficiency and expanding margins support the investment case, although capital intensity and valuation remain relevant risks.",
+
+        metrics: [
+          ["Market Cap", "$2.5T", "Equity value"],
+          ["P/E Ratio", "30.1×", "Forward"],
+          ["Revenue Growth", "+10.8%", "Year over year"],
+          ["EPS Growth", "+22.4%", "Year over year"],
+          ["FCF Margin", "11.5%", "Trailing twelve months"],
+          ["ROE", "23%", "Return on equity"]
+        ],
+
+        bull: [
+          "AWS provides a high-margin growth engine with long-term AI exposure.",
+          "Retail logistics efficiency creates significant operating leverage.",
+          "Advertising continues expanding as a high-margin revenue stream."
+        ],
+
+        bear: [
+          "Large capital expenditure requirements may constrain free cash flow.",
+          "Retail remains exposed to consumer spending and competitive pressure.",
+          "Valuation assumes continued margin and earnings expansion."
+        ],
+
+        factors: {
+          "Financial Health": 87,
+          "Profitability": 79,
+          "Growth": 85,
+          "Valuation": 66,
+          "Momentum": 81,
+          "Risk": 70
+        }
       }
     };
+
+
+    const chartPaths = {
+      "1D": `
+        M0 155
+        C45 160, 72 138, 110 148
+        C148 159, 180 128, 219 140
+        C258 151, 286 119, 327 132
+        C366 145, 402 113, 444 124
+        C485 136, 515 98, 555 108
+        C596 118, 626 83, 667 100
+        C710 117, 741 78, 782 89
+        C825 100, 858 73, 900 82
+      `,
+
+      "1W": `
+        M0 211
+        C39 186, 72 197, 111 170
+        C151 143, 181 171, 221 147
+        C261 123, 291 145, 331 118
+        C371 92, 405 125, 444 102
+        C487 77, 516 103, 555 86
+        C598 67, 627 91, 669 63
+        C711 35, 747 64, 787 50
+        C828 36, 861 45, 900 29
+      `,
+
+      "1M": `
+        M0 219
+        C41 196, 72 207, 112 182
+        C152 156, 185 181, 224 151
+        C265 121, 295 158, 336 130
+        C376 101, 411 133, 450 107
+        C490 81, 522 118, 562 91
+        C602 64, 633 89, 673 64
+        C713 39, 749 70, 790 48
+        C830 27, 865 43, 900 22
+      `,
+
+      "1Y": `
+        M0 225
+        C38 205, 70 218, 105 191
+        C143 162, 175 186, 214 156
+        C250 129, 279 162, 319 138
+        C356 117, 391 136, 426 107
+        C460 80, 490 112, 526 94
+        C562 76, 590 109, 625 75
+        C662 39, 694 75, 731 56
+        C770 36, 806 61, 843 36
+        C865 22, 881 31, 900 18
+      `,
+
+      "5Y": `
+        M0 247
+        C45 238, 72 247, 113 220
+        C154 192, 186 216, 225 189
+        C265 160, 298 188, 337 155
+        C378 120, 410 152, 451 116
+        C491 80, 524 117, 565 85
+        C605 54, 639 83, 680 56
+        C720 29, 756 54, 797 35
+        C839 16, 870 27, 900 12
+      `
+    };
+
+
+    const periodChanges = {
+      "1D": "+1.47% 1D",
+      "1W": "+3.84% 1W",
+      "1M": "+6.92% 1M",
+      "1Y": "+18.62% 1Y",
+      "5Y": "+311.4% 5Y"
+    };
+
+
+    let activeTicker = "AAPL";
 
 
     const stockSearch =
@@ -2312,44 +2345,125 @@
       toast.textContent = message;
       toast.classList.add("show");
 
-      window.clearTimeout(showToast.timeout);
+      clearTimeout(showToast.timeout);
 
-      showToast.timeout = window.setTimeout(() => {
+      showToast.timeout = setTimeout(() => {
         toast.classList.remove("show");
-      }, 2600);
+      }, 2400);
     }
 
 
-    function selectStock(ticker) {
-      stockSearch.value = ticker;
-      showStock(ticker);
+    function renderMetrics(stock) {
+      const grid =
+        document.getElementById("metricsGrid");
+
+      grid.innerHTML = "";
+
+      stock.metrics.forEach((metric) => {
+        const card =
+          document.createElement("div");
+
+        card.className = "metric-card";
+
+        card.innerHTML = `
+          <div class="metric-name">
+            ${metric[0]}
+          </div>
+
+          <div class="metric-value">
+            ${metric[1]}
+          </div>
+
+          <div class="metric-context">
+            ${metric[2]}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
     }
 
 
-    function analyzeStock() {
-      const ticker =
-        stockSearch.value.trim().toUpperCase();
+    function renderCases(stock) {
+      const bullList =
+        document.getElementById("bullList");
 
-      if (!ticker) {
-        showToast("Enter a ticker symbol to analyze.");
-        stockSearch.focus();
-        return;
-      }
+      const bearList =
+        document.getElementById("bearList");
 
-      showStock(ticker);
-    }
+      bullList.innerHTML = "";
+      bearList.innerHTML = "";
 
 
-    function showStock(ticker) {
-      const stock = demoStocks[ticker];
-
-      if (!stock) {
-        showToast(
-          "Design preview: try AAPL, NVDA, MSFT, GOOGL or AMZN."
+      stock.bull.forEach((text) => {
+        bullList.insertAdjacentHTML(
+          "beforeend",
+          `
+            <div class="case-item">
+              <span class="case-dot"></span>
+              <span>${text}</span>
+            </div>
+          `
         );
+      });
 
-        return;
-      }
+
+      stock.bear.forEach((text) => {
+        bearList.insertAdjacentHTML(
+          "beforeend",
+          `
+            <div class="case-item">
+              <span class="case-dot"></span>
+              <span>${text}</span>
+            </div>
+          `
+        );
+      });
+    }
+
+
+    function renderFactors(stock) {
+      const factorList =
+        document.getElementById("factorList");
+
+      factorList.innerHTML = "";
+
+
+      Object.entries(stock.factors)
+        .forEach(([name, score]) => {
+          factorList.insertAdjacentHTML(
+            "beforeend",
+            `
+              <div class="factor-row">
+
+                <span class="factor-name">
+                  ${name}
+                </span>
+
+                <div class="factor-track">
+                  <div
+                    class="factor-fill"
+                    style="width:${score}%"
+                  ></div>
+                </div>
+
+                <span class="factor-score">
+                  ${score}
+                </span>
+
+              </div>
+            `
+          );
+        });
+    }
+
+
+    function renderStock(ticker) {
+      const stock =
+        demoStocks[ticker];
+
+      activeTicker = ticker;
+
 
       document.getElementById("companyLogo").textContent =
         stock.logo;
@@ -2375,6 +2489,57 @@
       document.getElementById("chartChange").textContent =
         stock.yearly;
 
+      document.getElementById("aiScore").textContent =
+        stock.score;
+
+      document.getElementById("aiRating").textContent =
+        stock.rating;
+
+      document.getElementById("aiHeading").textContent =
+        stock.heading;
+
+      document.getElementById("aiSummary").textContent =
+        stock.summary;
+
+      document.getElementById("signalView").textContent =
+        stock.rating;
+
+      document.getElementById("confidenceValue").textContent =
+        stock.confidence;
+
+      document.getElementById("riskLevel").textContent =
+        stock.risk;
+
+
+      const scoreDegrees =
+        Math.round(stock.score * 3.6);
+
+      document.getElementById("scoreRing").style.background =
+        `
+          radial-gradient(
+            circle,
+            #0b0f14 60%,
+            transparent 61%
+          ),
+          conic-gradient(
+            #61e6ad 0deg ${scoreDegrees}deg,
+            rgba(255,255,255,0.075)
+            ${scoreDegrees}deg 360deg
+          )
+        `;
+
+
+      renderMetrics(stock);
+      renderCases(stock);
+      renderFactors(stock);
+    }
+
+
+    function selectStock(ticker) {
+      stockSearch.value = ticker;
+
+      renderStock(ticker);
+
       dashboard.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -2382,9 +2547,38 @@
     }
 
 
+    function analyzeStock() {
+      const ticker =
+        stockSearch.value
+          .trim()
+          .toUpperCase();
+
+      if (!ticker) {
+        showToast(
+          "Enter a ticker symbol to analyze."
+        );
+
+        stockSearch.focus();
+        return;
+      }
+
+
+      if (!demoStocks[ticker]) {
+        showToast(
+          "Research preview: try AAPL, NVDA, MSFT, GOOGL or AMZN."
+        );
+
+        return;
+      }
+
+
+      selectStock(ticker);
+    }
+
+
     stockSearch.addEventListener(
       "keydown",
-      function(event) {
+      (event) => {
         if (event.key === "Enter") {
           analyzeStock();
         }
@@ -2395,20 +2589,62 @@
     document
       .querySelectorAll(".period-button")
       .forEach((button) => {
-        button.addEventListener("click", () => {
-          document
-            .querySelectorAll(".period-button")
-            .forEach((item) => {
-              item.classList.remove("active");
-            });
 
-          button.classList.add("active");
+        button.addEventListener(
+          "click",
+          () => {
 
-          showToast(
-            "Chart period switching will activate with live market data."
-          );
-        });
+            const period =
+              button.dataset.period;
+
+
+            document
+              .querySelectorAll(".period-button")
+              .forEach((item) => {
+                item.classList.remove("active");
+              });
+
+
+            button.classList.add("active");
+
+
+            const linePath =
+              chartPaths[period];
+
+            document
+              .getElementById("chartLine")
+              .setAttribute(
+                "d",
+                linePath
+              );
+
+
+            document
+              .getElementById("chartAreaPath")
+              .setAttribute(
+                "d",
+                `${linePath} L900 280 L0 280 Z`
+              );
+
+
+            const stock =
+              demoStocks[activeTicker];
+
+
+            document
+              .getElementById("chartChange")
+              .textContent =
+                period === "1Y"
+                  ? stock.yearly
+                  : periodChanges[period];
+
+          }
+        );
+
       });
+
+
+    renderStock("AAPL");
   </script>
 
 </body>
