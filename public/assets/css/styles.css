@@ -1656,3 +1656,276 @@ a:focus-visible {
     font-size: 12px;
   }
 }
+/* =========================================
+   V2.4 — FACTOR CALCULATIONS
+   ========================================= */
+
+.factor-details-card {
+  margin-top: 14px;
+}
+
+.factor-details-intro {
+  max-width: 760px;
+  margin-top: 9px;
+  color: #8f99a9;
+  font-size: 11px;
+  line-height: 1.68;
+}
+
+.factor-details-list {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+
+/* =========================================
+   FACTOR BLOCK
+   ========================================= */
+
+.factor-detail {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.factor-detail-top {
+  min-height: 58px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.factor-detail-name {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: -0.01em;
+}
+
+.factor-detail-result {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.factor-detail-unrounded {
+  color: #747f8e;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.factor-detail-arrow {
+  color: #56606f;
+  font-size: 9px;
+}
+
+.factor-detail-final {
+  min-width: 24px;
+  color: var(--green);
+  font-size: 15px;
+  font-weight: 760;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================
+   COMPONENT TABLE
+   ========================================= */
+
+.factor-components {
+  border-top: 1px solid var(--border);
+}
+
+.factor-component-row {
+  min-height: 48px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns:
+    minmax(190px, 1fr)
+    105px
+    115px
+    85px
+    115px;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-soft);
+  font-size: 10px;
+}
+
+.factor-component-row:last-child {
+  border-bottom: 0;
+}
+
+.factor-component-row > :not(:first-child) {
+  text-align: right;
+}
+
+.factor-component-header {
+  min-height: 36px;
+  color: #687383;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.factor-component-name {
+  min-width: 0;
+  color: #9ca6b5;
+  font-weight: 600;
+}
+
+.factor-component-raw,
+.factor-component-score,
+.factor-component-weight,
+.factor-component-contribution {
+  font-variant-numeric: tabular-nums;
+}
+
+.factor-component-raw {
+  color: #8993a2;
+}
+
+.factor-component-score {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.factor-component-weight {
+  color: #7d8797;
+}
+
+.factor-component-contribution {
+  color: var(--green);
+  font-weight: 700;
+}
+
+
+/* =========================================
+   MISSING COMPONENT
+   ========================================= */
+
+.factor-component-missing {
+  color: #5f6977;
+}
+
+.factor-component-missing .factor-component-raw,
+.factor-component-missing .factor-component-score,
+.factor-component-missing .factor-component-weight,
+.factor-component-missing .factor-component-contribution {
+  color: #5f6977;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+  .factor-details-intro {
+    max-width: 100%;
+  }
+
+  .factor-detail-top {
+    min-height: 54px;
+    padding: 14px;
+  }
+
+  .factor-component-header {
+    display: none;
+  }
+
+  .factor-component-row {
+    min-height: 0;
+    padding: 13px 14px;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    gap: 10px 14px;
+  }
+
+  .factor-component-row > :not(:first-child) {
+    text-align: left;
+  }
+
+  .factor-component-name {
+    grid-column: 1 / -1;
+    padding-bottom: 2px;
+    color: var(--text);
+    font-size: 10px;
+  }
+
+  .factor-component-raw::before,
+  .factor-component-score::before,
+  .factor-component-weight::before,
+  .factor-component-contribution::before {
+    display: block;
+    margin-bottom: 3px;
+    color: #616c7b;
+    font-size: 7px;
+    font-weight: 750;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .factor-component-raw::before {
+    content: "Metric";
+  }
+
+  .factor-component-score::before {
+    content: "Component score";
+  }
+
+  .factor-component-weight::before {
+    content: "Weight";
+  }
+
+  .factor-component-contribution::before {
+    content: "Contribution";
+  }
+
+  .factor-component-contribution {
+    text-align: left;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .factor-details-list {
+    gap: 10px;
+  }
+
+  .factor-detail-top {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .factor-detail-name {
+    font-size: 11px;
+  }
+
+  .factor-detail-result {
+    gap: 5px;
+  }
+
+  .factor-detail-unrounded {
+    font-size: 8px;
+  }
+
+  .factor-detail-final {
+    font-size: 14px;
+  }
+
+  .factor-component-row {
+    padding: 12px;
+    gap: 9px 12px;
+    font-size: 9px;
+  }
+}
