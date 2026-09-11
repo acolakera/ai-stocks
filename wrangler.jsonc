@@ -1,9 +1,15 @@
 {
   "name": "ai-stocks",
+  "main": "src/index.js",
   "compatibility_date": "2026-09-11",
+
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "run_worker_first": [
+      "/api/*"
+    ]
   },
+
   "routes": [
     {
       "pattern": "stocks.ardacolaker.com",
