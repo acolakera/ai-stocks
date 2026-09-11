@@ -5,10 +5,16 @@ import {
   periodChanges
 } from "./data.js";
 
+import {
+  getFundamentals
+} from "./api.js";
+
 
 let activeTicker = DEFAULT_TICKER;
 let activePeriod = "1Y";
+
 let toastTimeout = null;
+let fundamentalsRequestId = 0;
 
 
 /* =========================================
@@ -16,10 +22,13 @@ let toastTimeout = null;
    ========================================= */
 
 function getElement(id) {
-  const element = document.getElementById(id);
+  const element =
+    document.getElementById(id);
 
   if (!element) {
-    throw new Error(`Missing required element: #${id}`);
+    throw new Error(
+      `Missing required element: #${id}`
+    );
   }
 
   return element;
@@ -31,14 +40,17 @@ function createElement(
   className,
   textContent = ""
 ) {
-  const element = document.createElement(tagName);
+  const element =
+    document.createElement(tagName);
 
   if (className) {
-    element.className = className;
+    element.className =
+      className;
   }
 
   if (textContent) {
-    element.textContent = textContent;
+    element.textContent =
+      textContent;
   }
 
   return element;
@@ -50,54 +62,145 @@ function createElement(
    ========================================= */
 
 function showToast(message) {
-  const toast = getElement("toast");
+  const toast =
+    getElement("toast");
 
-  toast.textContent = message;
-  toast.classList.add("show");
+  toast.textContent =
+    message;
+
+  toast.classList.add(
+    "show"
+  );
+
 
   if (toastTimeout) {
-    window.clearTimeout(toastTimeout);
+    window.clearTimeout(
+      toastTimeout
+    );
   }
 
-  toastTimeout = window.setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2400);
+
+  toastTimeout =
+    window.setTimeout(
+      () => {
+        toast.classList.remove(
+          "show"
+        );
+      },
+      2400
+    );
 }
 
 
 /* =========================================
-   METRICS
+   FORMATTERS
    ========================================= */
 
-function renderMetrics(stock) {
-  const grid = getElement("metricsGrid");
+function formatPercent(
+  metric,
+  {
+    signed = false
+  } = {}
+) {
+  const rawValue =
+    metric?.value;
+
+
+  if (
+    rawValue === null ||
+    rawValue === undefined
+  ) {
+    return "—";
+  }
+
+
+  const value =
+    Number(rawValue);
+
+
+  if (
+    !Number.isFinite(value)
+  ) {
+    return "—";
+  }
+
+
+  const prefix =
+    signed && value > 0
+      ? "+"
+      : "";
+
+
+  return (
+    `${prefix}${value.toFixed(1)}%`
+  );
+}
+
+
+function getDemoMetric(
+  stock,
+  metricName
+) {
+  const metric =
+    stock.metrics.find(
+      (item) =>
+        item[0] === metricName
+    );
+
+
+  return metric?.[1] ?? "—";
+}
+
+
+/* =========================================
+   METRIC CARDS
+   ========================================= */
+
+function renderMetricCards(
+  metrics
+) {
+  const grid =
+    getElement("metricsGrid");
 
   grid.replaceChildren();
 
-  stock.metrics.forEach(
-    ([name, value, context]) => {
-      const card = createElement(
-        "div",
-        "metric-card"
-      );
 
-      const nameElement = createElement(
-        "div",
-        "metric-name",
-        name
-      );
+  metrics.forEach(
+    ({
+      name,
+      value,
+      context
+    }) => {
+      const card =
+        createElement(
+          "div",
+          "metric-card"
+        );
 
-      const valueElement = createElement(
-        "div",
-        "metric-value",
-        value
-      );
 
-      const contextElement = createElement(
-        "div",
-        "metric-context",
-        context
-      );
+      const nameElement =
+        createElement(
+          "div",
+          "metric-name",
+          name
+        );
+
+
+      const valueElement =
+        createElement(
+          "div",
+          "metric-value",
+          value
+        );
+
+
+      const contextElement =
+        createElement(
+          "div",
+          "metric-context",
+          context
+        );
+
 
       card.append(
         nameElement,
@@ -105,9 +208,368 @@ function renderMetrics(stock) {
         contextElement
       );
 
-      grid.appendChild(card);
+
+      grid.appendChild(
+        card
+      );
     }
   );
+}
+
+
+function renderMetricsLoading(
+  stock
+) {
+  renderMetricCards([
+    {
+      name:
+        "Market Cap",
+
+      value:
+        getDemoMetric(
+          stock,
+          "Market Cap"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "P/E Ratio",
+
+      value:
+        getDemoMetric(
+          stock,
+          "P/E Ratio"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "Revenue Growth",
+
+      value:
+        "—",
+
+      context:
+        "Loading SEC filing"
+    },
+
+    {
+      name:
+        "EPS Growth",
+
+      value:
+        "—",
+
+      context:
+        "Loading SEC filing"
+    },
+
+    {
+      name:
+        "FCF Margin",
+
+      value:
+        "—",
+
+      context:
+        "Loading SEC filing"
+    },
+
+    {
+      name:
+        "ROE",
+
+      value:
+        "—",
+
+      context:
+        "Loading SEC filing"
+    }
+  ]);
+}
+
+
+function renderMetricsUnavailable(
+  stock
+) {
+  renderMetricCards([
+    {
+      name:
+        "Market Cap",
+
+      value:
+        getDemoMetric(
+          stock,
+          "Market Cap"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "P/E Ratio",
+
+      value:
+        getDemoMetric(
+          stock,
+          "P/E Ratio"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "Revenue Growth",
+
+      value:
+        "—",
+
+      context:
+        "SEC data unavailable"
+    },
+
+    {
+      name:
+        "EPS Growth",
+
+      value:
+        "—",
+
+      context:
+        "SEC data unavailable"
+    },
+
+    {
+      name:
+        "FCF Margin",
+
+      value:
+        "—",
+
+      context:
+        "SEC data unavailable"
+    },
+
+    {
+      name:
+        "ROE",
+
+      value:
+        "—",
+
+      context:
+        "SEC data unavailable"
+    }
+  ]);
+}
+
+
+function renderLiveMetrics(
+  stock,
+  fundamentals
+) {
+  const current =
+    fundamentals.current;
+
+  const previous =
+    fundamentals.previous;
+
+  const derived =
+    fundamentals.derived;
+
+
+  const currentYear =
+    current?.fiscalYear ?? "—";
+
+  const previousYear =
+    previous?.fiscalYear ?? "—";
+
+
+  renderMetricCards([
+    {
+      name:
+        "Market Cap",
+
+      value:
+        getDemoMetric(
+          stock,
+          "Market Cap"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "P/E Ratio",
+
+      value:
+        getDemoMetric(
+          stock,
+          "P/E Ratio"
+        ),
+
+      context:
+        "Demo market data"
+    },
+
+    {
+      name:
+        "Revenue Growth",
+
+      value:
+        formatPercent(
+          derived?.revenueGrowth,
+          {
+            signed: true
+          }
+        ),
+
+      context:
+        `SEC FY${currentYear} vs FY${previousYear}`
+    },
+
+    {
+      name:
+        "EPS Growth",
+
+      value:
+        formatPercent(
+          derived?.epsGrowth,
+          {
+            signed: true
+          }
+        ),
+
+      context:
+        `SEC FY${currentYear} vs FY${previousYear}`
+    },
+
+    {
+      name:
+        "FCF Margin",
+
+      value:
+        formatPercent(
+          derived?.freeCashFlowMargin
+        ),
+
+      context:
+        `SEC FY${currentYear}`
+    },
+
+    {
+      name:
+        "ROE",
+
+      value:
+        formatPercent(
+          derived?.returnOnEquity
+        ),
+
+      context:
+        `SEC FY${currentYear}`
+    }
+  ]);
+}
+
+
+/* =========================================
+   LIVE FUNDAMENTALS
+   ========================================= */
+
+async function loadFundamentals(
+  ticker,
+  requestId
+) {
+  const stock =
+    demoStocks[ticker];
+
+
+  try {
+    const response =
+      await getFundamentals(
+        ticker
+      );
+
+
+    /*
+      The user may switch stocks before
+      this request finishes.
+    */
+
+    if (
+      requestId !==
+        fundamentalsRequestId ||
+      ticker !==
+        activeTicker
+    ) {
+      return;
+    }
+
+
+    renderLiveMetrics(
+      stock,
+      response.fundamentals
+    );
+
+
+    const exchange =
+      response.company?.exchange ||
+      stock.exchange ||
+      "NASDAQ";
+
+
+    getElement(
+      "companyMeta"
+    ).textContent =
+      `${exchange} · ${stock.sector} · SEC fundamentals + demo market data`;
+  }
+
+  catch (error) {
+    console.error(
+      "Fundamentals request failed:",
+      error
+    );
+
+
+    if (
+      requestId !==
+        fundamentalsRequestId ||
+      ticker !==
+        activeTicker
+    ) {
+      return;
+    }
+
+
+    renderMetricsUnavailable(
+      stock
+    );
+
+
+    getElement(
+      "companyMeta"
+    ).textContent =
+      `${stock.exchange} · ${stock.sector} · Demo market data`;
+
+
+    showToast(
+      "SEC fundamentals are temporarily unavailable."
+    );
+  }
 }
 
 
@@ -116,49 +578,66 @@ function renderMetrics(stock) {
    ========================================= */
 
 function createCaseItem(text) {
-  const item = createElement(
-    "div",
-    "case-item"
-  );
+  const item =
+    createElement(
+      "div",
+      "case-item"
+    );
 
-  const dot = createElement(
-    "span",
-    "case-dot"
-  );
 
-  const content = createElement(
-    "span",
-    "",
-    text
-  );
+  const dot =
+    createElement(
+      "span",
+      "case-dot"
+    );
+
+
+  const content =
+    createElement(
+      "span",
+      "",
+      text
+    );
+
 
   item.append(
     dot,
     content
   );
 
+
   return item;
 }
 
 
 function renderCases(stock) {
-  const bullList = getElement("bullList");
-  const bearList = getElement("bearList");
+  const bullList =
+    getElement("bullList");
+
+  const bearList =
+    getElement("bearList");
+
 
   bullList.replaceChildren();
   bearList.replaceChildren();
 
-  stock.bull.forEach((text) => {
-    bullList.appendChild(
-      createCaseItem(text)
-    );
-  });
 
-  stock.bear.forEach((text) => {
-    bearList.appendChild(
-      createCaseItem(text)
-    );
-  });
+  stock.bull.forEach(
+    (text) => {
+      bullList.appendChild(
+        createCaseItem(text)
+      );
+    }
+  );
+
+
+  stock.bear.forEach(
+    (text) => {
+      bearList.appendChild(
+        createCaseItem(text)
+      );
+    }
+  );
 }
 
 
@@ -170,41 +649,67 @@ function renderFactors(stock) {
   const factorList =
     getElement("factorList");
 
+
   factorList.replaceChildren();
 
-  Object.entries(stock.factors)
-    .forEach(([name, score]) => {
-      const row = createElement(
-        "div",
-        "factor-row"
-      );
 
-      const nameElement = createElement(
-        "span",
-        "factor-name",
-        name
-      );
+  Object.entries(
+    stock.factors
+  ).forEach(
+    ([name, score]) => {
+      const row =
+        createElement(
+          "div",
+          "factor-row"
+        );
 
-      const track = createElement(
-        "div",
-        "factor-track"
-      );
 
-      const fill = createElement(
-        "div",
-        "factor-fill"
-      );
+      const nameElement =
+        createElement(
+          "span",
+          "factor-name",
+          name
+        );
+
+
+      const track =
+        createElement(
+          "div",
+          "factor-track"
+        );
+
+
+      const fill =
+        createElement(
+          "div",
+          "factor-fill"
+        );
+
 
       fill.style.width =
-        `${Math.max(0, Math.min(score, 100))}%`;
+        `${
+          Math.max(
+            0,
+            Math.min(
+              score,
+              100
+            )
+          )
+        }%`;
 
-      const scoreElement = createElement(
-        "span",
-        "factor-score",
-        String(score)
+
+      const scoreElement =
+        createElement(
+          "span",
+          "factor-score",
+          String(score)
+        );
+
+
+      track.appendChild(
+        fill
       );
 
-      track.appendChild(fill);
 
       row.append(
         nameElement,
@@ -212,8 +717,12 @@ function renderFactors(stock) {
         scoreElement
       );
 
-      factorList.appendChild(row);
-    });
+
+      factorList.appendChild(
+        row
+      );
+    }
+  );
 }
 
 
@@ -231,10 +740,16 @@ function renderScoreRing(score) {
       )
     );
 
-  const degrees =
-    Math.round(safeScore * 3.6);
 
-  getElement("scoreRing").style.background = `
+  const degrees =
+    Math.round(
+      safeScore * 3.6
+    );
+
+
+  getElement(
+    "scoreRing"
+  ).style.background = `
     radial-gradient(
       circle,
       #0b0f14 60%,
@@ -258,64 +773,94 @@ function getPeriodChange(
   period
 ) {
   if (period === "1D") {
-    return `${stock.change} 1D`;
+    return (
+      `${stock.change} 1D`
+    );
   }
+
 
   if (period === "1Y") {
     return stock.yearly;
   }
 
-  return periodChanges[period] ?? "";
+
+  return (
+    periodChanges[period] ??
+    ""
+  );
 }
 
 
-function renderChartPeriod(period) {
+function renderChartPeriod(
+  period
+) {
   const linePath =
     chartPaths[period];
+
 
   if (!linePath) {
     return;
   }
 
-  activePeriod = period;
 
-  getElement("chartLine")
-    .setAttribute(
-      "d",
-      linePath
-    );
+  activePeriod =
+    period;
 
-  getElement("chartAreaPath")
-    .setAttribute(
-      "d",
-      `${linePath} L900 280 L0 280 Z`
-    );
+
+  getElement(
+    "chartLine"
+  ).setAttribute(
+    "d",
+    linePath
+  );
+
+
+  getElement(
+    "chartAreaPath"
+  ).setAttribute(
+    "d",
+    `${linePath} L900 280 L0 280 Z`
+  );
+
 
   const stock =
-    demoStocks[activeTicker];
+    demoStocks[
+      activeTicker
+    ];
 
-  getElement("chartChange").textContent =
+
+  getElement(
+    "chartChange"
+  ).textContent =
     getPeriodChange(
       stock,
       period
     );
 
+
   document
-    .querySelectorAll(".period-button")
-    .forEach((button) => {
-      const isActive =
-        button.dataset.period === period;
+    .querySelectorAll(
+      ".period-button"
+    )
+    .forEach(
+      (button) => {
+        const isActive =
+          button.dataset.period ===
+          period;
 
-      button.classList.toggle(
-        "active",
-        isActive
-      );
 
-      button.setAttribute(
-        "aria-pressed",
-        String(isActive)
-      );
-    });
+        button.classList.toggle(
+          "active",
+          isActive
+        );
+
+
+        button.setAttribute(
+          "aria-pressed",
+          String(isActive)
+        );
+      }
+    );
 }
 
 
@@ -327,72 +872,148 @@ function renderStock(ticker) {
   const stock =
     demoStocks[ticker];
 
+
   if (!stock) {
     return false;
   }
 
-  activeTicker = ticker;
 
-  getElement("companyLogo").textContent =
-    stock.logo;
-
-  getElement("companyName").textContent =
-    stock.name;
-
-  getElement("tickerLabel").textContent =
+  activeTicker =
     ticker;
 
-  getElement("companyMeta").textContent =
-    `${stock.exchange} · ${stock.sector} · Demo data`;
 
-  getElement("stockPrice").textContent =
+  const requestId =
+    ++fundamentalsRequestId;
+
+
+  getElement(
+    "companyLogo"
+  ).textContent =
+    stock.logo;
+
+
+  getElement(
+    "companyName"
+  ).textContent =
+    stock.name;
+
+
+  getElement(
+    "tickerLabel"
+  ).textContent =
+    ticker;
+
+
+  getElement(
+    "companyMeta"
+  ).textContent =
+    `${stock.exchange} · ${stock.sector} · Loading SEC fundamentals`;
+
+
+  getElement(
+    "stockPrice"
+  ).textContent =
     stock.price;
 
-  getElement("stockChange").textContent =
+
+  getElement(
+    "stockChange"
+  ).textContent =
     stock.change;
 
-  getElement("chartPrice").textContent =
+
+  getElement(
+    "chartPrice"
+  ).textContent =
     stock.price;
 
-  getElement("aiScore").textContent =
+
+  getElement(
+    "aiScore"
+  ).textContent =
     String(stock.score);
 
-  getElement("aiRating").textContent =
+
+  getElement(
+    "aiRating"
+  ).textContent =
     stock.rating;
 
-  getElement("aiHeading").textContent =
+
+  getElement(
+    "aiHeading"
+  ).textContent =
     stock.heading;
 
-  getElement("aiSummary").textContent =
+
+  getElement(
+    "aiSummary"
+  ).textContent =
     stock.summary;
 
-  getElement("signalView").textContent =
+
+  getElement(
+    "signalView"
+  ).textContent =
     stock.rating;
 
-  getElement("confidenceValue").textContent =
+
+  getElement(
+    "confidenceValue"
+  ).textContent =
     stock.confidence;
 
-  getElement("riskLevel").textContent =
+
+  getElement(
+    "riskLevel"
+  ).textContent =
     stock.risk;
 
+
   const marketMeta =
-    document.querySelector(".market-meta");
+    document.querySelector(
+      ".market-meta"
+    );
+
 
   if (marketMeta) {
     marketMeta.textContent =
       `Demo market data · ${stock.currency}`;
   }
 
-  renderScoreRing(stock.score);
-  renderMetrics(stock);
-  renderCases(stock);
-  renderFactors(stock);
+
+  renderScoreRing(
+    stock.score
+  );
+
+  renderMetricsLoading(
+    stock
+  );
+
+  renderCases(
+    stock
+  );
+
+  renderFactors(
+    stock
+  );
+
+  renderChartPeriod(
+    activePeriod
+  );
+
 
   /*
-    Keep the selected chart period when
-    switching between stocks.
+    Intentionally not awaited:
+    the rest of the UI renders instantly
+    while SEC data loads independently.
   */
-  renderChartPeriod(activePeriod);
+
+  void loadFundamentals(
+    ticker,
+    requestId
+  );
+
 
   return true;
 }
@@ -404,16 +1025,26 @@ function renderStock(ticker) {
 
 function selectStock(ticker) {
   const normalizedTicker =
-    ticker.trim().toUpperCase();
+    ticker
+      .trim()
+      .toUpperCase();
+
 
   const searchInput =
-    getElement("stockSearch");
+    getElement(
+      "stockSearch"
+    );
+
 
   searchInput.value =
     normalizedTicker;
 
+
   const success =
-    renderStock(normalizedTicker);
+    renderStock(
+      normalizedTicker
+    );
+
 
   if (!success) {
     showToast(
@@ -423,22 +1054,31 @@ function selectStock(ticker) {
     return;
   }
 
-  getElement("dashboard")
-    .scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+
+  getElement(
+    "dashboard"
+  ).scrollIntoView({
+    behavior:
+      "smooth",
+
+    block:
+      "start"
+  });
 }
 
 
 function analyzeStock() {
   const searchInput =
-    getElement("stockSearch");
+    getElement(
+      "stockSearch"
+    );
+
 
   const ticker =
     searchInput.value
       .trim()
       .toUpperCase();
+
 
   if (!ticker) {
     showToast(
@@ -446,8 +1086,10 @@ function analyzeStock() {
     );
 
     searchInput.focus();
+
     return;
   }
+
 
   if (!demoStocks[ticker]) {
     showToast(
@@ -457,7 +1099,10 @@ function analyzeStock() {
     return;
   }
 
-  selectStock(ticker);
+
+  selectStock(
+    ticker
+  );
 }
 
 
@@ -467,19 +1112,29 @@ function analyzeStock() {
 
 function setupSearchEvents() {
   const searchInput =
-    getElement("stockSearch");
+    getElement(
+      "stockSearch"
+    );
+
 
   const searchButton =
-    document.querySelector(".search-button");
+    document.querySelector(
+      ".search-button"
+    );
+
 
   searchInput.addEventListener(
     "keydown",
     (event) => {
-      if (event.key === "Enter") {
+      if (
+        event.key ===
+        "Enter"
+      ) {
         analyzeStock();
       }
     }
   );
+
 
   searchButton?.addEventListener(
     "click",
@@ -490,39 +1145,53 @@ function setupSearchEvents() {
 
 function setupTickerButtons() {
   document
-    .querySelectorAll(".ticker-chip")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          const ticker =
-            button.dataset.ticker;
+    .querySelectorAll(
+      ".ticker-chip"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            const ticker =
+              button.dataset.ticker;
 
-          if (ticker) {
-            selectStock(ticker);
+
+            if (ticker) {
+              selectStock(
+                ticker
+              );
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
 }
 
 
 function setupPeriodButtons() {
   document
-    .querySelectorAll(".period-button")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          const period =
-            button.dataset.period;
+    .querySelectorAll(
+      ".period-button"
+    )
+    .forEach(
+      (button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            const period =
+              button.dataset.period;
 
-          if (period) {
-            renderChartPeriod(period);
+
+            if (period) {
+              renderChartPeriod(
+                period
+              );
+            }
           }
-        }
-      );
-    });
+        );
+      }
+    );
 }
 
 
@@ -535,8 +1204,9 @@ function initializeApp() {
   setupTickerButtons();
   setupPeriodButtons();
 
-  renderStock(DEFAULT_TICKER);
-  renderChartPeriod(activePeriod);
+  renderStock(
+    DEFAULT_TICKER
+  );
 }
 
 
