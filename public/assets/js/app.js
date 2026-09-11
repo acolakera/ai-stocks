@@ -8,7 +8,7 @@ import {
 import {
   getFundamentals,
   getAnalysis
-} from "./api.js?v=4";
+} from "./api.js?v=5";
 
 
 let activeTicker =
