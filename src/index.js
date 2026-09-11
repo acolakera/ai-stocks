@@ -1,3 +1,8 @@
+import {
+  buildDerivedMetrics
+} from "./metrics.js";
+
+
 const SEC_TICKERS_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
 
@@ -95,14 +100,18 @@ async function fetchSecJson(
     );
   }
 
+
   const response =
     await fetch(
       url,
       {
         headers: {
-          "User-Agent": userAgent,
+          "User-Agent":
+            userAgent,
+
           "Accept":
             "application/json",
+
           "Accept-Encoding":
             "gzip, deflate"
         },
@@ -114,11 +123,13 @@ async function fetchSecJson(
       }
     );
 
+
   if (!response.ok) {
     throw new Error(
       `SEC_REQUEST_FAILED_${response.status}`
     );
   }
+
 
   return response.json();
 }
@@ -139,6 +150,7 @@ async function findSecCompany(
       86400
     );
 
+
   const fields =
     Array.isArray(payload.fields)
       ? payload.fields
@@ -148,6 +160,7 @@ async function findSecCompany(
     Array.isArray(payload.data)
       ? payload.data
       : [];
+
 
   const cikIndex =
     fields.indexOf("cik");
@@ -243,31 +256,15 @@ async function fetchCompanyFacts(
 
 function getConcept(
   companyFacts,
-  conceptNames
+  conceptName
 ) {
-  const usGaap =
-    companyFacts?.facts?.["us-gaap"];
-
-  if (!usGaap) {
-    return null;
-  }
-
-  for (
-    const conceptName
-    of conceptNames
-  ) {
-    const concept =
-      usGaap[conceptName];
-
-    if (concept) {
-      return {
-        conceptName,
-        concept
-      };
-    }
-  }
-
-  return null;
+  return (
+    companyFacts
+      ?.facts
+      ?.["us-gaap"]
+      ?.[conceptName] ??
+    null
+  );
 }
 
 
@@ -307,6 +304,7 @@ function getFactsFromUnits(
   const fallbackUnit =
     Object.keys(units)[0];
 
+
   if (!fallbackUnit) {
     return {
       unit: null,
@@ -316,7 +314,9 @@ function getFactsFromUnits(
 
 
   return {
-    unit: fallbackUnit,
+    unit:
+      fallbackUnit,
+
     facts:
       Array.isArray(
         units[fallbackUnit]
@@ -335,6 +335,7 @@ function normalizeFact(
   if (!fact) {
     return null;
   }
+
 
   return {
     value:
@@ -369,68 +370,144 @@ function normalizeFact(
 
 
 /* =========================================
-   ANNUAL FACT SELECTION
+   ANNUAL PERIOD DISCOVERY
    ========================================= */
 
-function findLatestAnnualFact(
+function findAnnualFacts(
   companyFacts,
   conceptNames,
   preferredUnits
 ) {
-  for (
-    const conceptName
-    of conceptNames
-  ) {
-    const result =
-      getConcept(
-        companyFacts,
-        [conceptName]
-      );
-
-    if (!result) {
-      continue;
-    }
+  const candidates = [];
 
 
-    const {
-      unit,
-      facts
-    } =
-      getFactsFromUnits(
-        result.concept,
-        preferredUnits
-      );
+  conceptNames.forEach(
+    (
+      conceptName,
+      conceptPriority
+    ) => {
+      const concept =
+        getConcept(
+          companyFacts,
+          conceptName
+        );
+
+      if (!concept) {
+        return;
+      }
 
 
-    const candidates =
-      facts
-        .filter((fact) => {
-          return (
-            isAnnualForm(
-              fact.form
-            ) &&
-            fact.fp === "FY" &&
-            fact.end
-          );
-        })
-        .sort(
-          compareFactsNewestFirst
+      const {
+        unit,
+        facts
+      } =
+        getFactsFromUnits(
+          concept,
+          preferredUnits
         );
 
 
-    if (candidates.length > 0) {
-      return normalizeFact(
-        candidates[0],
-        conceptName,
-        unit
+      facts.forEach((fact) => {
+        if (
+          !isAnnualForm(
+            fact.form
+          ) ||
+          fact.fp !== "FY" ||
+          !fact.end
+        ) {
+          return;
+        }
+
+
+        candidates.push({
+          fact,
+          conceptName,
+          conceptPriority,
+          unit
+        });
+      });
+    }
+  );
+
+
+  candidates.sort(
+    (a, b) => {
+      const endDifference =
+        String(
+          b.fact.end ?? ""
+        ).localeCompare(
+          String(
+            a.fact.end ?? ""
+          )
+        );
+
+      if (endDifference !== 0) {
+        return endDifference;
+      }
+
+
+      if (
+        a.conceptPriority !==
+        b.conceptPriority
+      ) {
+        return (
+          a.conceptPriority -
+          b.conceptPriority
+        );
+      }
+
+
+      return String(
+        b.fact.filed ?? ""
+      ).localeCompare(
+        String(
+          a.fact.filed ?? ""
+        )
       );
     }
-  }
+  );
 
 
-  return null;
+  const uniquePeriods =
+    new Map();
+
+
+  candidates.forEach(
+    (candidate) => {
+      const periodEnd =
+        candidate.fact.end;
+
+      if (
+        uniquePeriods.has(
+          periodEnd
+        )
+      ) {
+        return;
+      }
+
+
+      uniquePeriods.set(
+        periodEnd,
+
+        normalizeFact(
+          candidate.fact,
+          candidate.conceptName,
+          candidate.unit
+        )
+      );
+    }
+  );
+
+
+  return Array.from(
+    uniquePeriods.values()
+  );
 }
 
+
+/* =========================================
+   FACT FOR SPECIFIC ANNUAL PERIOD
+   ========================================= */
 
 function findFactForAnnualPeriod(
   companyFacts,
@@ -447,13 +524,13 @@ function findFactForAnnualPeriod(
     const conceptName
     of conceptNames
   ) {
-    const result =
+    const concept =
       getConcept(
         companyFacts,
-        [conceptName]
+        conceptName
       );
 
-    if (!result) {
+    if (!concept) {
       continue;
     }
 
@@ -463,7 +540,7 @@ function findFactForAnnualPeriod(
       facts
     } =
       getFactsFromUnits(
-        result.concept,
+        concept,
         preferredUnits
       );
 
@@ -475,23 +552,18 @@ function findFactForAnnualPeriod(
             isAnnualForm(
               fact.form
             ) &&
-            fact.end === periodEnd
+            fact.end ===
+              periodEnd
           );
         })
         .sort(
-          (a, b) => {
-            return String(
-              b.filed ?? ""
-            ).localeCompare(
-              String(
-                a.filed ?? ""
-              )
-            );
-          }
+          compareFactsNewestFirst
         );
 
 
-    if (candidates.length > 0) {
+    if (
+      candidates.length > 0
+    ) {
       return normalizeFact(
         candidates[0],
         conceptName,
@@ -506,39 +578,20 @@ function findFactForAnnualPeriod(
 
 
 /* =========================================
-   FUNDAMENTALS
+   BUILD ONE ANNUAL PERIOD
    ========================================= */
 
-function buildAnnualFundamentals(
-  companyFacts
+function buildAnnualPeriod(
+  companyFacts,
+  revenueFact
 ) {
-  /*
-    Revenue is used as the anchor so all
-    other metrics come from the same
-    fiscal-year end.
-  */
-
-  const revenue =
-    findLatestAnnualFact(
-      companyFacts,
-
-      [
-        "RevenueFromContractWithCustomerExcludingAssessedTax",
-        "Revenues",
-        "SalesRevenueNet"
-      ],
-
-      ["USD"]
-    );
-
-
-  if (!revenue) {
+  if (!revenueFact) {
     return null;
   }
 
 
   const periodEnd =
-    revenue.end;
+    revenueFact.end;
 
 
   const netIncome =
@@ -661,34 +714,37 @@ function buildAnnualFundamentals(
     null;
 
 
+  const operatingCashFlowValue =
+    Number(
+      operatingCashFlow?.value
+    );
+
+  const capitalExpenditureValue =
+    Number(
+      capitalExpenditures?.value
+    );
+
+
   if (
-    operatingCashFlow &&
-    capitalExpenditures &&
     Number.isFinite(
-      Number(
-        operatingCashFlow.value
-      )
+      operatingCashFlowValue
     ) &&
     Number.isFinite(
-      Number(
-        capitalExpenditures.value
-      )
+      capitalExpenditureValue
     )
   ) {
     freeCashFlow = {
       value:
-        Number(
-          operatingCashFlow.value
-        ) -
+        operatingCashFlowValue -
         Math.abs(
-          Number(
-            capitalExpenditures.value
-          )
+          capitalExpenditureValue
         ),
 
-      unit: "USD",
+      unit:
+        "USD",
 
-      derived: true,
+      derived:
+        true,
 
       formula:
         "Operating Cash Flow - Capital Expenditures",
@@ -701,17 +757,18 @@ function buildAnnualFundamentals(
 
   return {
     fiscalYear:
-      revenue.fiscalYear,
+      revenueFact.fiscalYear,
 
     periodEnd,
 
     filed:
-      revenue.filed,
+      revenueFact.filed,
 
     form:
-      revenue.form,
+      revenueFact.form,
 
-    revenue,
+    revenue:
+      revenueFact,
 
     netIncome,
 
@@ -735,6 +792,114 @@ function buildAnnualFundamentals(
 
 
 /* =========================================
+   BUILD FUNDAMENTALS
+   ========================================= */
+
+function buildFundamentals(
+  companyFacts
+) {
+  const revenueFacts =
+    findAnnualFacts(
+      companyFacts,
+
+      [
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "Revenues",
+        "SalesRevenueNet"
+      ],
+
+      ["USD"]
+    );
+
+
+  if (
+    revenueFacts.length === 0
+  ) {
+    return null;
+  }
+
+
+  const current =
+    buildAnnualPeriod(
+      companyFacts,
+      revenueFacts[0]
+    );
+
+
+  const previous =
+    revenueFacts.length > 1
+      ? buildAnnualPeriod(
+          companyFacts,
+          revenueFacts[1]
+        )
+      : null;
+
+
+  const derived =
+    buildDerivedMetrics(
+      current,
+      previous
+    );
+
+
+  return {
+    current,
+    previous,
+    derived
+  };
+}
+
+
+/* =========================================
+   SYMBOL VALIDATION
+   ========================================= */
+
+function getRequestedSymbol(
+  request
+) {
+  const url =
+    new URL(request.url);
+
+  return normalizeTicker(
+    url.searchParams.get(
+      "symbol"
+    )
+  );
+}
+
+
+function validateSymbol(
+  symbol
+) {
+  if (!symbol) {
+    return {
+      valid: false,
+      error:
+        "A ticker symbol is required."
+    };
+  }
+
+
+  if (
+    !TICKER_PATTERN.test(
+      symbol
+    )
+  ) {
+    return {
+      valid: false,
+      error:
+        "Invalid ticker symbol."
+    };
+  }
+
+
+  return {
+    valid: true
+  };
+}
+
+
+/* =========================================
    ROUTE: COMPANY
    ========================================= */
 
@@ -742,31 +907,23 @@ async function handleCompanyLookup(
   request,
   env
 ) {
-  const url =
-    new URL(request.url);
-
   const symbol =
-    normalizeTicker(
-      url.searchParams.get("symbol")
+    getRequestedSymbol(
+      request
     );
 
 
-  if (!symbol) {
-    return jsonResponse(
-      {
-        error:
-          "A ticker symbol is required."
-      },
-      400
+  const validation =
+    validateSymbol(
+      symbol
     );
-  }
 
 
-  if (!TICKER_PATTERN.test(symbol)) {
+  if (!validation.valid) {
     return jsonResponse(
       {
         error:
-          "Invalid ticker symbol."
+          validation.error
       },
       400
     );
@@ -810,31 +967,23 @@ async function handleFundamentals(
   request,
   env
 ) {
-  const url =
-    new URL(request.url);
-
   const symbol =
-    normalizeTicker(
-      url.searchParams.get("symbol")
+    getRequestedSymbol(
+      request
     );
 
 
-  if (!symbol) {
-    return jsonResponse(
-      {
-        error:
-          "A ticker symbol is required."
-      },
-      400
+  const validation =
+    validateSymbol(
+      symbol
     );
-  }
 
 
-  if (!TICKER_PATTERN.test(symbol)) {
+  if (!validation.valid) {
     return jsonResponse(
       {
         error:
-          "Invalid ticker symbol."
+          validation.error
       },
       400
     );
@@ -866,13 +1015,15 @@ async function handleFundamentals(
     );
 
 
-  const annual =
-    buildAnnualFundamentals(
+  const fundamentals =
+    buildFundamentals(
       companyFacts
     );
 
 
-  if (!annual) {
+  if (
+    !fundamentals?.current
+  ) {
     return jsonResponse(
       {
         error:
@@ -889,9 +1040,7 @@ async function handleFundamentals(
 
       company,
 
-      fundamentals: {
-        annual
-      },
+      fundamentals,
 
       source: {
         provider:
@@ -901,7 +1050,10 @@ async function handleFundamentals(
           "Company Facts",
 
         type:
-          "Reported financial statements"
+          "Reported financial statements",
+
+        derivedMetrics:
+          "Calculated from reported SEC figures"
       }
     },
     200,
