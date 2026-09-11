@@ -38,7 +38,7 @@ const AI_PREVIEW_TICKERS =
 */
 
 const ANALYSIS_CACHE_VERSION =
-  "v2";
+  "v3";
 
 const ANALYSIS_CACHE_TTL =
   86400;
