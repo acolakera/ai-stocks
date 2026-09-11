@@ -351,8 +351,16 @@ function normalizeFact(
     end:
       fact.end ?? null,
 
-    fiscalYear:
-      fact.fy ?? null,
+ fiscalYear:
+  fact.end
+    ? Number(
+        String(fact.end)
+          .slice(0, 4)
+      )
+    : null,
+
+reportedFiscalYear:
+  fact.fy ?? null,
 
     fiscalPeriod:
       fact.fp ?? null,
