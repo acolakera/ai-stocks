@@ -50,6 +50,10 @@ Important rules:
     equity base can mechanically amplify ROE.
 17. The deterministic scoring output is context for the narrative,
     not an investment recommendation.
+18. Do not speculate about future financial performance, future
+    capital requirements, future margins, or future cash flows.
+19. When referring to dataCoveragePercent, call it "scoring data
+    coverage". Never describe it as complete company data coverage.
 
 This research is informational and is not investment advice.
 `;
@@ -390,8 +394,8 @@ function buildResearchInput(
       riskLevel:
         scoring.riskLevel,
 
-      dataCoveragePercent:
-        scoring.dataCoverage,
+scoringDataCoveragePercent:
+  scoring.dataCoverage,
 
       factors:
         scoring.factors
