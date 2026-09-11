@@ -61,27 +61,6 @@ function isAnnualForm(form) {
 }
 
 
-function compareFactsNewestFirst(
-  a,
-  b
-) {
-  const endDifference =
-    String(b.end ?? "")
-      .localeCompare(
-        String(a.end ?? "")
-      );
-
-  if (endDifference !== 0) {
-    return endDifference;
-  }
-
-  return String(b.filed ?? "")
-    .localeCompare(
-      String(a.filed ?? "")
-    );
-}
-
-
 /* =========================================
    SEC REQUESTS
    ========================================= */
@@ -93,6 +72,7 @@ async function fetchSecJson(
 ) {
   const userAgent =
     env.SEC_USER_AGENT?.trim();
+
 
   if (!userAgent) {
     throw new Error(
@@ -242,6 +222,7 @@ async function fetchCompanyFacts(
   const url =
     `${SEC_COMPANY_FACTS_URL}/CIK${cik}.json`;
 
+
   return fetchSecJson(
     url,
     env,
@@ -275,6 +256,7 @@ function getFactsFromUnits(
   const units =
     concept?.units;
 
+
   if (!units) {
     return {
       unit: null,
@@ -293,7 +275,9 @@ function getFactsFromUnits(
       )
     ) {
       return {
-        unit: preferredUnit,
+        unit:
+          preferredUnit,
+
         facts:
           units[preferredUnit]
       };
@@ -351,16 +335,16 @@ function normalizeFact(
     end:
       fact.end ?? null,
 
- fiscalYear:
-  fact.end
-    ? Number(
-        String(fact.end)
-          .slice(0, 4)
-      )
-    : null,
+    fiscalYear:
+      fact.end
+        ? Number(
+            String(fact.end)
+              .slice(0, 4)
+          )
+        : null,
 
-reportedFiscalYear:
-  fact.fy ?? null,
+    reportedFiscalYear:
+      fact.fy ?? null,
 
     fiscalPeriod:
       fact.fp ?? null,
@@ -400,6 +384,7 @@ function findAnnualFacts(
           conceptName
         );
 
+
       if (!concept) {
         return;
       }
@@ -415,25 +400,27 @@ function findAnnualFacts(
         );
 
 
-      facts.forEach((fact) => {
-        if (
-          !isAnnualForm(
-            fact.form
-          ) ||
-          fact.fp !== "FY" ||
-          !fact.end
-        ) {
-          return;
+      facts.forEach(
+        (fact) => {
+          if (
+            !isAnnualForm(
+              fact.form
+            ) ||
+            fact.fp !== "FY" ||
+            !fact.end
+          ) {
+            return;
+          }
+
+
+          candidates.push({
+            fact,
+            conceptName,
+            conceptPriority,
+            unit
+          });
         }
-
-
-        candidates.push({
-          fact,
-          conceptName,
-          conceptPriority,
-          unit
-        });
-      });
+      );
     }
   );
 
@@ -449,8 +436,38 @@ function findAnnualFacts(
           )
         );
 
-      if (endDifference !== 0) {
+
+      if (
+        endDifference !== 0
+      ) {
         return endDifference;
+      }
+
+
+      /*
+        For the same fiscal period,
+        prefer the most recently filed
+        annual statement.
+
+        This protects us when comparative
+        figures are restated or re-tagged
+        in a newer 10-K.
+      */
+
+      const filedDifference =
+        String(
+          b.fact.filed ?? ""
+        ).localeCompare(
+          String(
+            a.fact.filed ?? ""
+          )
+        );
+
+
+      if (
+        filedDifference !== 0
+      ) {
+        return filedDifference;
       }
 
 
@@ -466,10 +483,10 @@ function findAnnualFacts(
 
 
       return String(
-        b.fact.filed ?? ""
+        b.fact.accn ?? ""
       ).localeCompare(
         String(
-          a.fact.filed ?? ""
+          a.fact.accn ?? ""
         )
       );
     }
@@ -484,6 +501,7 @@ function findAnnualFacts(
     (candidate) => {
       const periodEnd =
         candidate.fact.end;
+
 
       if (
         uniquePeriods.has(
@@ -528,60 +546,118 @@ function findFactForAnnualPeriod(
   }
 
 
-  for (
-    const conceptName
-    of conceptNames
-  ) {
-    const concept =
-      getConcept(
-        companyFacts,
-        conceptName
-      );
-
-    if (!concept) {
-      continue;
-    }
+  const candidates = [];
 
 
-    const {
-      unit,
-      facts
-    } =
-      getFactsFromUnits(
-        concept,
-        preferredUnits
-      );
-
-
-    const candidates =
-      facts
-        .filter((fact) => {
-          return (
-            isAnnualForm(
-              fact.form
-            ) &&
-            fact.end ===
-              periodEnd
-          );
-        })
-        .sort(
-          compareFactsNewestFirst
+  conceptNames.forEach(
+    (
+      conceptName,
+      conceptPriority
+    ) => {
+      const concept =
+        getConcept(
+          companyFacts,
+          conceptName
         );
 
 
-    if (
-      candidates.length > 0
-    ) {
-      return normalizeFact(
-        candidates[0],
-        conceptName,
-        unit
+      if (!concept) {
+        return;
+      }
+
+
+      const {
+        unit,
+        facts
+      } =
+        getFactsFromUnits(
+          concept,
+          preferredUnits
+        );
+
+
+      facts.forEach(
+        (fact) => {
+          if (
+            !isAnnualForm(
+              fact.form
+            ) ||
+            fact.end !==
+              periodEnd
+          ) {
+            return;
+          }
+
+
+          candidates.push({
+            fact,
+            conceptName,
+            conceptPriority,
+            unit
+          });
+        }
       );
     }
+  );
+
+
+  candidates.sort(
+    (a, b) => {
+      const filedDifference =
+        String(
+          b.fact.filed ?? ""
+        ).localeCompare(
+          String(
+            a.fact.filed ?? ""
+          )
+        );
+
+
+      if (
+        filedDifference !== 0
+      ) {
+        return filedDifference;
+      }
+
+
+      if (
+        a.conceptPriority !==
+        b.conceptPriority
+      ) {
+        return (
+          a.conceptPriority -
+          b.conceptPriority
+        );
+      }
+
+
+      return String(
+        b.fact.accn ?? ""
+      ).localeCompare(
+        String(
+          a.fact.accn ?? ""
+        )
+      );
+    }
+  );
+
+
+  if (
+    candidates.length === 0
+  ) {
+    return null;
   }
 
 
-  return null;
+  const selected =
+    candidates[0];
+
+
+  return normalizeFact(
+    selected.fact,
+    selected.conceptName,
+    selected.unit
+  );
 }
 
 
@@ -703,19 +779,20 @@ function buildAnnualPeriod(
       periodEnd
     );
 
-const capitalExpenditures =
-  findFactForAnnualPeriod(
-    companyFacts,
 
-    [
-      "PaymentsToAcquirePropertyPlantAndEquipment",
-      "PaymentsToAcquireProductiveAssets"
-    ],
+  const capitalExpenditures =
+    findFactForAnnualPeriod(
+      companyFacts,
 
-    ["USD"],
+      [
+        "PaymentsToAcquirePropertyPlantAndEquipment",
+        "PaymentsToAcquireProductiveAssets"
+      ],
 
-    periodEnd
-  );
+      ["USD"],
+
+      periodEnd
+    );
 
 
   let freeCashFlow =
@@ -723,43 +800,57 @@ const capitalExpenditures =
 
 
   const operatingCashFlowValue =
-    Number(
-      operatingCashFlow?.value
-    );
+    operatingCashFlow?.value;
 
   const capitalExpenditureValue =
-    Number(
-      capitalExpenditures?.value
-    );
+    capitalExpenditures?.value;
 
 
   if (
-    Number.isFinite(
-      operatingCashFlowValue
-    ) &&
-    Number.isFinite(
-      capitalExpenditureValue
-    )
+    operatingCashFlowValue !== null &&
+    operatingCashFlowValue !== undefined &&
+    capitalExpenditureValue !== null &&
+    capitalExpenditureValue !== undefined
   ) {
-    freeCashFlow = {
-      value:
-        operatingCashFlowValue -
-        Math.abs(
-          capitalExpenditureValue
-        ),
+    const operatingCashFlowNumber =
+      Number(
+        operatingCashFlowValue
+      );
 
-      unit:
-        "USD",
+    const capitalExpenditureNumber =
+      Number(
+        capitalExpenditureValue
+      );
 
-      derived:
-        true,
 
-      formula:
-        "Operating Cash Flow - Capital Expenditures",
+    if (
+      Number.isFinite(
+        operatingCashFlowNumber
+      ) &&
+      Number.isFinite(
+        capitalExpenditureNumber
+      )
+    ) {
+      freeCashFlow = {
+        value:
+          operatingCashFlowNumber -
+          Math.abs(
+            capitalExpenditureNumber
+          ),
 
-      end:
-        periodEnd
-    };
+        unit:
+          "USD",
+
+        derived:
+          true,
+
+        formula:
+          "Operating Cash Flow - Capital Expenditures",
+
+        end:
+          periodEnd
+      };
+    }
   }
 
 
@@ -868,6 +959,7 @@ function getRequestedSymbol(
   const url =
     new URL(request.url);
 
+
   return normalizeTicker(
     url.searchParams.get(
       "symbol"
@@ -882,6 +974,7 @@ function validateSymbol(
   if (!symbol) {
     return {
       valid: false,
+
       error:
         "A ticker symbol is required."
     };
@@ -895,6 +988,7 @@ function validateSymbol(
   ) {
     return {
       valid: false,
+
       error:
         "Invalid ticker symbol."
     };
@@ -1104,6 +1198,7 @@ export default {
         return jsonResponse(
           {
             ok: true,
+
             service:
               "ai-stocks-api"
           }
