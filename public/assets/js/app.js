@@ -1114,6 +1114,460 @@ function renderMethodology(
   card.hidden =
     false;
 }
+/* =========================================
+   FACTOR CALCULATIONS
+   ========================================= */
+
+function hideFactorDetails() {
+  const card =
+    document.getElementById(
+      "factorDetailsCard"
+    );
+
+  if (card) {
+    card.hidden =
+      true;
+  }
+}
+
+
+function formatFactorMetricValue(
+  component
+) {
+  const value =
+    Number(
+      component?.rawValue
+    );
+
+  if (
+    !Number.isFinite(value)
+  ) {
+    return "—";
+  }
+
+
+  const unit =
+    component?.unit ??
+    "";
+
+
+  if (unit === "%") {
+    const isGrowthMetric =
+      String(
+        component?.key ?? ""
+      ).toLowerCase()
+        .includes(
+          "growth"
+        );
+
+
+    const sign =
+      (
+        isGrowthMetric &&
+        value > 0
+      )
+        ? "+"
+        : "";
+
+
+    return (
+      `${sign}${value.toFixed(1)}%`
+    );
+  }
+
+
+  return value.toFixed(
+    2
+  );
+}
+
+
+function formatFactorComponentScore(
+  value
+) {
+  const number =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return "—";
+  }
+
+
+  return number.toFixed(
+    2
+  );
+}
+
+
+function formatFactorWeight(
+  value
+) {
+  const number =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return "—";
+  }
+
+
+  const formatted =
+    Number.isInteger(number)
+      ? String(number)
+      : number.toFixed(1);
+
+
+  return `${formatted}%`;
+}
+
+
+function formatFactorContribution(
+  value
+) {
+  const number =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return "—";
+  }
+
+
+  const sign =
+    number >= 0
+      ? "+"
+      : "";
+
+
+  return (
+    `${sign}${number.toFixed(2)}`
+  );
+}
+
+
+function renderFactorDetails(
+  scoring
+) {
+  const card =
+    document.getElementById(
+      "factorDetailsCard"
+    );
+
+  const list =
+    document.getElementById(
+      "factorDetailsList"
+    );
+
+
+  if (
+    !card ||
+    !list
+  ) {
+    return;
+  }
+
+
+  const details =
+    scoring?.factorDetails;
+
+
+  if (
+    !details ||
+    typeof details !== "object"
+  ) {
+    hideFactorDetails();
+    return;
+  }
+
+
+  list.replaceChildren();
+
+
+  Object.entries(
+    FACTOR_LABELS
+  ).forEach(
+    ([key, label]) => {
+      const detail =
+        details?.[key];
+
+
+      if (!detail) {
+        return;
+      }
+
+
+      const factor =
+        createElement(
+          "section",
+          "factor-detail"
+        );
+
+
+      const top =
+        createElement(
+          "div",
+          "factor-detail-top"
+        );
+
+
+      const name =
+        createElement(
+          "div",
+          "factor-detail-name",
+          label
+        );
+
+
+      const result =
+        createElement(
+          "div",
+          "factor-detail-result"
+        );
+
+
+      const unroundedValue =
+        Number(
+          detail?.unroundedScore
+        );
+
+
+      const finalValue =
+        Number(
+          detail?.finalScore
+        );
+
+
+      const unrounded =
+        createElement(
+          "span",
+          "factor-detail-unrounded",
+          Number.isFinite(
+            unroundedValue
+          )
+            ? unroundedValue.toFixed(2)
+            : "—"
+        );
+
+
+      const arrow =
+        createElement(
+          "span",
+          "factor-detail-arrow",
+          "→"
+        );
+
+
+      arrow.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+
+      const finalScore =
+        createElement(
+          "span",
+          "factor-detail-final",
+          Number.isFinite(
+            finalValue
+          )
+            ? String(finalValue)
+            : "—"
+        );
+
+
+      result.append(
+        unrounded,
+        arrow,
+        finalScore
+      );
+
+
+      top.append(
+        name,
+        result
+      );
+
+
+      const components =
+        createElement(
+          "div",
+          "factor-components"
+        );
+
+
+      const header =
+        createElement(
+          "div",
+          "factor-component-row factor-component-header"
+        );
+
+
+      [
+        "Metric",
+        "Value",
+        "Component Score",
+        "Weight",
+        "Contribution"
+      ].forEach(
+        (text) => {
+          header.appendChild(
+            createElement(
+              "span",
+              "",
+              text
+            )
+          );
+        }
+      );
+
+
+      components.appendChild(
+        header
+      );
+
+
+      const componentList =
+        Array.isArray(
+          detail?.components
+        )
+          ? detail.components
+          : [];
+
+
+      componentList.forEach(
+        (component) => {
+          const componentScore =
+            Number(
+              component
+                ?.componentScore
+            );
+
+
+          const effectiveWeight =
+            Number(
+              component
+                ?.effectiveWeightPercent
+            );
+
+
+          const contribution =
+            Number(
+              component
+                ?.contribution
+            );
+
+
+          const hasScore =
+            Number.isFinite(
+              componentScore
+            );
+
+
+          const row =
+            createElement(
+              "div",
+              hasScore
+                ? "factor-component-row"
+                : "factor-component-row factor-component-missing"
+            );
+
+
+          const metricName =
+            createElement(
+              "span",
+              "factor-component-name",
+              component?.label ??
+              "Metric"
+            );
+
+
+          const rawValue =
+            createElement(
+              "span",
+              "factor-component-raw",
+              formatFactorMetricValue(
+                component
+              )
+            );
+
+
+          const score =
+            createElement(
+              "span",
+              "factor-component-score",
+              formatFactorComponentScore(
+                componentScore
+              )
+            );
+
+
+          const weight =
+            createElement(
+              "span",
+              "factor-component-weight",
+              formatFactorWeight(
+                effectiveWeight
+              )
+            );
+
+
+          const contributionElement =
+            createElement(
+              "span",
+              "factor-component-contribution",
+              formatFactorContribution(
+                contribution
+              )
+            );
+
+
+          row.append(
+            metricName,
+            rawValue,
+            score,
+            weight,
+            contributionElement
+          );
+
+
+          components.appendChild(
+            row
+          );
+        }
+      );
+
+
+      factor.append(
+        top,
+        components
+      );
+
+
+      list.appendChild(
+        factor
+      );
+    }
+  );
+
+
+  if (
+    list.children.length === 0
+  ) {
+    hideFactorDetails();
+    return;
+  }
+
+
+  card.hidden =
+    false;
+}
 
 /* =========================================
    SCORE RING
