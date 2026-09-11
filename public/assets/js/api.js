@@ -167,8 +167,8 @@ export async function getAnalysis(
   }
 
 
-  const url =
-    `/api/analysis?symbol=${encodeURIComponent(symbol)}`;
+ const url =
+  `/api/analysis?symbol=${encodeURIComponent(symbol)}&client=v6`;
 
 
   const response =
