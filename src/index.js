@@ -1205,15 +1205,10 @@ async function handleFundamentals(
    ANALYSIS CACHE
    ========================================= */
 
-function buildAnalysisCacheRequest(
-  request,
+function buildAnalysisCacheKey(
   symbol,
   fundamentals
 ) {
-  const originalUrl =
-    new URL(request.url);
-
-
   const periodEnd =
     fundamentals
       ?.current
@@ -1228,33 +1223,13 @@ function buildAnalysisCacheRequest(
     "unknown";
 
 
-  const cacheUrl =
-    new URL(
-      originalUrl.origin
-    );
-
-
-  cacheUrl.pathname =
-    `/__internal-cache/analysis/${ANALYSIS_CACHE_VERSION}/${symbol}`;
-
-  cacheUrl.searchParams.set(
-    "periodEnd",
-    periodEnd
-  );
-
-  cacheUrl.searchParams.set(
-    "filed",
+  return [
+    "analysis",
+    ANALYSIS_CACHE_VERSION,
+    symbol,
+    periodEnd,
     filed
-  );
-
-
-  return new Request(
-    cacheUrl.toString(),
-    {
-      method:
-        "GET"
-    }
-  );
+  ].join(":");
 }
 
 
@@ -1264,8 +1239,7 @@ function buildAnalysisCacheRequest(
 
 async function handleAnalysis(
   request,
-  env,
-  ctx
+  env
 ) {
   const symbol =
     getRequestedSymbol(
@@ -1340,33 +1314,82 @@ async function handleAnalysis(
 
 
   /*
-    AI cache key includes the financial
-    reporting period and filing date.
+    The KV cache key includes the analysis
+    methodology version, ticker, annual
+    reporting period and SEC filing date.
 
-    A new annual filing therefore produces
-    a new cache key automatically.
+    A methodology change or a new annual
+    filing therefore produces a new key.
   */
 
-  const cache =
-    caches.default;
+  if (!env.ANALYSIS_CACHE) {
+    console.error(
+      "ANALYSIS_CACHE KV binding is not configured."
+    );
 
 
-  const cacheRequest =
-    buildAnalysisCacheRequest(
-      request,
+    return jsonResponse(
+      {
+        error:
+          "AI research cache is not configured."
+      },
+      503
+    );
+  }
+
+
+  const cacheKey =
+    buildAnalysisCacheKey(
       symbol,
       fundamentals
     );
 
 
-  const cachedResponse =
-    await cache.match(
-      cacheRequest
+  let cachedPayload = null;
+
+
+  try {
+    cachedPayload =
+      await env.ANALYSIS_CACHE.get(
+        cacheKey,
+        {
+          type:
+            "json"
+        }
+      );
+  }
+
+  catch (error) {
+    console.error(
+      "Analysis KV cache read failed:",
+      error?.message ??
+      error
     );
 
 
-  if (cachedResponse) {
-    return cachedResponse;
+    /*
+      Fail closed before calling OpenAI.
+
+      This prevents a cache outage from
+      turning into uncontrolled API spend.
+    */
+
+    return jsonResponse(
+      {
+        error:
+          "AI research cache is temporarily unavailable."
+      },
+      503
+    );
+  }
+
+
+  if (cachedPayload) {
+    return jsonResponse(
+      cachedPayload,
+      200,
+      `public, max-age=${ANALYSIS_CACHE_TTL}`
+    );
   }
 
 
@@ -1471,63 +1494,75 @@ async function handleAnalysis(
       generated?.meta?.source ??
       "SEC EDGAR annual fundamentals",
 
-   methodology:
-  "Deterministic fundamental scoring with AI-generated narrative based only on supplied SEC annual financial data"
+    methodology:
+      "Deterministic fundamental scoring with AI-generated narrative based only on supplied SEC annual financial data"
   };
 
 
-  const response =
-    jsonResponse(
+  const responsePayload = {
+    ok: true,
+
+    company: {
+      symbol:
+        company.symbol,
+
+      name:
+        company.name,
+
+      exchange:
+        company.exchange,
+
+      source:
+        company.source
+    },
+
+    analysis:
+      generated.analysis,
+
+    meta:
+      publicMeta,
+
+    disclaimer:
+      "Informational research only. Not investment advice."
+  };
+
+
+  /*
+    Persist the public response in Workers KV
+    for 24 hours.
+
+    The write is awaited so that once this
+    request completes, the generated analysis
+    has been stored whenever KV is healthy.
+  */
+
+  try {
+    await env.ANALYSIS_CACHE.put(
+      cacheKey,
+      JSON.stringify(
+        responsePayload
+      ),
       {
-        ok: true,
-
-        company: {
-          symbol:
-            company.symbol,
-
-          name:
-            company.name,
-
-          exchange:
-            company.exchange,
-
-          source:
-            company.source
-        },
-
-        analysis:
-          generated.analysis,
-
-        meta:
-          publicMeta,
-
-        disclaimer:
-          "Informational research only. Not investment advice."
-      },
-      200,
-      `public, max-age=${ANALYSIS_CACHE_TTL}`
-    );
-
-
-  const cacheWrite =
-    cache.put(
-      cacheRequest,
-      response.clone()
-    );
-
-
-  if (ctx?.waitUntil) {
-    ctx.waitUntil(
-      cacheWrite
+        expirationTtl:
+          ANALYSIS_CACHE_TTL
+      }
     );
   }
 
-  else {
-    await cacheWrite;
+  catch (error) {
+    console.error(
+      "Analysis KV cache write failed:",
+      error?.message ??
+      error
+    );
   }
 
 
-  return response;
+  return jsonResponse(
+    responsePayload,
+    200,
+    `public, max-age=${ANALYSIS_CACHE_TTL}`
+  );
 }
 
 
@@ -1602,8 +1637,7 @@ export default {
       ) {
         return await handleAnalysis(
           request,
-          env,
-          ctx
+          env
         );
       }
 
