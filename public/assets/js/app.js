@@ -5,10 +5,21 @@ import {
   periodChanges
 } from "./data.js";
 
-import {
+const APP_VERSION =
+  new URL(
+    import.meta.url
+  ).searchParams.get(
+    "v"
+  ) ?? "1";
+
+
+const {
   getFundamentals,
   getAnalysis
-} from "./api.js?v=5";
+} =
+  await import(
+    `./api.js?v=${encodeURIComponent(APP_VERSION)}`
+  );
 
 
 let activeTicker =
