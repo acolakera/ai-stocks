@@ -1408,3 +1408,251 @@ a:focus-visible {
     font-size: 36px;
   }
 }
+/* =========================================
+   V2.3 — SCORE METHODOLOGY
+   ========================================= */
+
+.methodology-card {
+  margin-top: 14px;
+}
+
+
+.methodology-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 18px;
+}
+
+
+.methodology-version {
+  flex-shrink: 0;
+
+  padding: 5px 8px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.018);
+
+  color: var(--muted);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+}
+
+
+.methodology-intro {
+  max-width: 760px;
+
+  margin-top: 9px;
+
+  color: #8f99a9;
+
+  font-size: 11px;
+  line-height: 1.68;
+}
+
+
+.methodology-table {
+  margin-top: 20px;
+
+  border-top: 1px solid var(--border);
+}
+
+
+.methodology-row {
+  min-height: 46px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(180px, 1fr)
+    90px
+    90px
+    125px;
+
+  align-items: center;
+
+  gap: 16px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+
+  color: var(--text-soft);
+
+  font-size: 10px;
+}
+
+
+.methodology-row > :not(:first-child) {
+  text-align: right;
+}
+
+
+.methodology-header {
+  min-height: 37px;
+
+  color: #687383;
+
+  font-size: 8px;
+  font-weight: 750;
+
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+
+.methodology-factor-name {
+  color: #9ca6b5;
+
+  font-weight: 600;
+}
+
+
+.methodology-factor-score {
+  color: var(--text);
+
+  font-weight: 720;
+}
+
+
+.methodology-factor-weight {
+  color: #7d8797;
+}
+
+
+.methodology-factor-contribution {
+  color: var(--green);
+
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+.methodology-total {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+
+.methodology-total strong {
+  min-width: 42px;
+
+  color: var(--text);
+
+  font-size: 13px;
+  font-weight: 740;
+
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+.methodology-total #finalScore {
+  color: var(--green);
+}
+
+
+.methodology-arrow {
+  margin: 0 3px;
+
+  color: #56606f;
+}
+
+
+.methodology-note {
+  margin-top: 15px;
+  padding-top: 14px;
+
+  border-top: 1px solid var(--border);
+
+  color: #727d8d;
+
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   METHODOLOGY — RESPONSIVE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+  .methodology-row {
+    grid-template-columns:
+      minmax(120px, 1fr)
+      52px
+      58px
+      82px;
+
+    gap: 8px;
+  }
+
+
+  .methodology-intro {
+    max-width: 100%;
+  }
+
+
+  .methodology-total {
+    justify-content: flex-start;
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .methodology-top {
+    gap: 12px;
+  }
+
+
+  .methodology-row {
+    min-height: 43px;
+
+    grid-template-columns:
+      minmax(100px, 1fr)
+      42px
+      50px
+      69px;
+
+    gap: 6px;
+
+    font-size: 9px;
+  }
+
+
+  .methodology-header {
+    font-size: 7px;
+  }
+
+
+  .methodology-total {
+    gap: 6px;
+
+    font-size: 9px;
+  }
+
+
+  .methodology-total strong {
+    min-width: 35px;
+
+    font-size: 12px;
+  }
+}
