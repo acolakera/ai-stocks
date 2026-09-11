@@ -1,4 +1,8 @@
-const DEFAULT_TIMEOUT_MS = 10000;
+const DEFAULT_TIMEOUT_MS =
+  10000;
+
+const ANALYSIS_TIMEOUT_MS =
+  45000;
 
 
 /* =========================================
@@ -14,6 +18,7 @@ async function requestJson(
   const controller =
     new AbortController();
 
+
   const timeout =
     window.setTimeout(
       () => {
@@ -28,7 +33,8 @@ async function requestJson(
       await fetch(
         url,
         {
-          method: "GET",
+          method:
+            "GET",
 
           headers: {
             Accept:
@@ -63,8 +69,10 @@ async function requestJson(
           "API request failed."
         );
 
+
       error.status =
         response.status;
+
 
       throw error;
     }
@@ -82,6 +90,7 @@ async function requestJson(
         "REQUEST_TIMEOUT"
       );
     }
+
 
     throw error;
   }
@@ -119,7 +128,9 @@ export async function getFundamentals(
 
 
   const response =
-    await requestJson(url);
+    await requestJson(
+      url
+    );
 
 
   if (
@@ -128,6 +139,54 @@ export async function getFundamentals(
   ) {
     throw new Error(
       "FUNDAMENTALS_UNAVAILABLE"
+    );
+  }
+
+
+  return response;
+}
+
+
+/* =========================================
+   AI ANALYSIS API
+   ========================================= */
+
+export async function getAnalysis(
+  ticker
+) {
+  const symbol =
+    String(ticker ?? "")
+      .trim()
+      .toUpperCase();
+
+
+  if (!symbol) {
+    throw new Error(
+      "TICKER_REQUIRED"
+    );
+  }
+
+
+  const url =
+    `/api/analysis?symbol=${encodeURIComponent(symbol)}`;
+
+
+  const response =
+    await requestJson(
+      url,
+      {
+        timeoutMs:
+          ANALYSIS_TIMEOUT_MS
+      }
+    );
+
+
+  if (
+    !response?.ok ||
+    !response?.analysis
+  ) {
+    throw new Error(
+      "ANALYSIS_UNAVAILABLE"
     );
   }
 
