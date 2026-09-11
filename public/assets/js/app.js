@@ -1216,13 +1216,19 @@ function formatFactorWeight(
   }
 
 
-  const formatted =
-    Number.isInteger(number)
-      ? String(number)
-      : number.toFixed(1);
+const rounded =
+  Math.round(number);
 
 
-  return `${formatted}%`;
+const formatted =
+  Math.abs(
+    number - rounded
+  ) < 0.000001
+    ? String(rounded)
+    : number.toFixed(1);
+
+
+return `${formatted}%`;
 }
 
 
