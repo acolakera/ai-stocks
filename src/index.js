@@ -1517,10 +1517,13 @@ async function handleAnalysis(
     },
 
     analysis:
-      generated.analysis,
+  generated.analysis,
 
-    meta:
-      publicMeta,
+scoring:
+  generated.scoring,
+
+meta:
+  publicMeta,
 
     disclaimer:
       "Informational research only. Not investment advice."
