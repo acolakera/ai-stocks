@@ -2,6 +2,10 @@ import {
   buildDerivedMetrics
 } from "./metrics.js";
 
+import {
+  generateFundamentalAnalysis
+} from "./analysis.js";
+
 
 const SEC_TICKERS_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
@@ -11,6 +15,33 @@ const SEC_COMPANY_FACTS_URL =
 
 const TICKER_PATTERN =
   /^[A-Z0-9.-]{1,12}$/;
+
+
+/*
+  AI analysis is intentionally limited
+  during the research preview.
+*/
+
+const AI_PREVIEW_TICKERS =
+  new Set([
+    "AAPL",
+    "NVDA",
+    "MSFT",
+    "GOOGL",
+    "AMZN"
+  ]);
+
+
+/*
+  Increment this value whenever the
+  AI methodology or prompt changes.
+*/
+
+const ANALYSIS_CACHE_VERSION =
+  "v1";
+
+const ANALYSIS_CACHE_TTL =
+  86400;
 
 
 /* =========================================
@@ -444,16 +475,6 @@ function findAnnualFacts(
       }
 
 
-      /*
-        For the same fiscal period,
-        prefer the most recently filed
-        annual statement.
-
-        This protects us when comparative
-        figures are restated or re-tagged
-        in a newer 10-K.
-      */
-
       const filedDifference =
         String(
           b.fact.filed ?? ""
@@ -681,13 +702,8 @@ function buildAnnualPeriod(
   const netIncome =
     findFactForAnnualPeriod(
       companyFacts,
-
-      [
-        "NetIncomeLoss"
-      ],
-
+      ["NetIncomeLoss"],
       ["USD"],
-
       periodEnd
     );
 
@@ -695,15 +711,8 @@ function buildAnnualPeriod(
   const dilutedEPS =
     findFactForAnnualPeriod(
       companyFacts,
-
-      [
-        "EarningsPerShareDiluted"
-      ],
-
-      [
-        "USD/shares"
-      ],
-
+      ["EarningsPerShareDiluted"],
+      ["USD/shares"],
       periodEnd
     );
 
@@ -711,13 +720,8 @@ function buildAnnualPeriod(
   const assets =
     findFactForAnnualPeriod(
       companyFacts,
-
-      [
-        "Assets"
-      ],
-
+      ["Assets"],
       ["USD"],
-
       periodEnd
     );
 
@@ -1002,6 +1006,49 @@ function validateSymbol(
 
 
 /* =========================================
+   LOAD COMPANY FUNDAMENTALS
+   ========================================= */
+
+async function loadCompanyFundamentals(
+  symbol,
+  env
+) {
+  const company =
+    await findSecCompany(
+      symbol,
+      env
+    );
+
+
+  if (!company) {
+    return {
+      company: null,
+      fundamentals: null
+    };
+  }
+
+
+  const companyFacts =
+    await fetchCompanyFacts(
+      company.cik,
+      env
+    );
+
+
+  const fundamentals =
+    buildFundamentals(
+      companyFacts
+    );
+
+
+  return {
+    company,
+    fundamentals
+  };
+}
+
+
+/* =========================================
    ROUTE: COMPANY
    ========================================= */
 
@@ -1092,8 +1139,11 @@ async function handleFundamentals(
   }
 
 
-  const company =
-    await findSecCompany(
+  const {
+    company,
+    fundamentals
+  } =
+    await loadCompanyFundamentals(
       symbol,
       env
     );
@@ -1108,19 +1158,6 @@ async function handleFundamentals(
       404
     );
   }
-
-
-  const companyFacts =
-    await fetchCompanyFacts(
-      company.cik,
-      env
-    );
-
-
-  const fundamentals =
-    buildFundamentals(
-      companyFacts
-    );
 
 
   if (
@@ -1165,13 +1202,344 @@ async function handleFundamentals(
 
 
 /* =========================================
+   ANALYSIS CACHE
+   ========================================= */
+
+function buildAnalysisCacheRequest(
+  request,
+  symbol,
+  fundamentals
+) {
+  const originalUrl =
+    new URL(request.url);
+
+
+  const periodEnd =
+    fundamentals
+      ?.current
+      ?.periodEnd ??
+    "unknown";
+
+
+  const filed =
+    fundamentals
+      ?.current
+      ?.filed ??
+    "unknown";
+
+
+  const cacheUrl =
+    new URL(
+      originalUrl.origin
+    );
+
+
+  cacheUrl.pathname =
+    `/__internal-cache/analysis/${ANALYSIS_CACHE_VERSION}/${symbol}`;
+
+  cacheUrl.searchParams.set(
+    "periodEnd",
+    periodEnd
+  );
+
+  cacheUrl.searchParams.set(
+    "filed",
+    filed
+  );
+
+
+  return new Request(
+    cacheUrl.toString(),
+    {
+      method:
+        "GET"
+    }
+  );
+}
+
+
+/* =========================================
+   ROUTE: AI ANALYSIS
+   ========================================= */
+
+async function handleAnalysis(
+  request,
+  env,
+  ctx
+) {
+  const symbol =
+    getRequestedSymbol(
+      request
+    );
+
+
+  const validation =
+    validateSymbol(
+      symbol
+    );
+
+
+  if (!validation.valid) {
+    return jsonResponse(
+      {
+        error:
+          validation.error
+      },
+      400
+    );
+  }
+
+
+  if (
+    !AI_PREVIEW_TICKERS.has(
+      symbol
+    )
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "AI research is currently limited to preview tickers."
+      },
+      404
+    );
+  }
+
+
+  const {
+    company,
+    fundamentals
+  } =
+    await loadCompanyFundamentals(
+      symbol,
+      env
+    );
+
+
+  if (!company) {
+    return jsonResponse(
+      {
+        error:
+          "Company not found."
+      },
+      404
+    );
+  }
+
+
+  if (
+    !fundamentals?.current
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Annual financial data is unavailable for this company."
+      },
+      404
+    );
+  }
+
+
+  /*
+    AI cache key includes the financial
+    reporting period and filing date.
+
+    A new annual filing therefore produces
+    a new cache key automatically.
+  */
+
+  const cache =
+    caches.default;
+
+
+  const cacheRequest =
+    buildAnalysisCacheRequest(
+      request,
+      symbol,
+      fundamentals
+    );
+
+
+  const cachedResponse =
+    await cache.match(
+      cacheRequest
+    );
+
+
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+
+  let generated;
+
+
+  try {
+    generated =
+      await generateFundamentalAnalysis(
+        company,
+        fundamentals,
+        env
+      );
+  }
+
+  catch (error) {
+    console.error(
+      "AI analysis failed:",
+      error?.message ??
+      error
+    );
+
+
+    if (
+      error?.message ===
+      "OPENAI_API_KEY_NOT_CONFIGURED"
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "AI research service is not configured."
+        },
+        503
+      );
+    }
+
+
+    if (
+      error?.message ===
+      "OPENAI_REQUEST_TIMEOUT"
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "AI research request timed out."
+        },
+        504
+      );
+    }
+
+
+    if (
+      String(
+        error?.message ?? ""
+      ).includes(
+        "OPENAI_REQUEST_FAILED_429"
+      )
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "AI research service is temporarily unavailable."
+        },
+        503
+      );
+    }
+
+
+    return jsonResponse(
+      {
+        error:
+          "Unable to generate AI research."
+      },
+      502
+    );
+  }
+
+
+  /*
+    OpenAI's internal response ID is not
+    exposed to the public frontend.
+  */
+
+  const publicMeta = {
+    model:
+      generated?.meta?.model ??
+      null,
+
+    generatedAt:
+      generated?.meta?.generatedAt ??
+      null,
+
+    fiscalYear:
+      generated?.meta?.fiscalYear ??
+      null,
+
+    periodEnd:
+      generated?.meta?.periodEnd ??
+      null,
+
+    source:
+      generated?.meta?.source ??
+      "SEC EDGAR annual fundamentals",
+
+    methodology:
+      "AI-generated fundamental research based only on supplied SEC annual financial data"
+  };
+
+
+  const response =
+    jsonResponse(
+      {
+        ok: true,
+
+        company: {
+          symbol:
+            company.symbol,
+
+          name:
+            company.name,
+
+          exchange:
+            company.exchange,
+
+          source:
+            company.source
+        },
+
+        analysis:
+          generated.analysis,
+
+        meta:
+          publicMeta,
+
+        disclaimer:
+          "Informational research only. Not investment advice."
+      },
+      200,
+      `public, max-age=${ANALYSIS_CACHE_TTL}`
+    );
+
+
+  const cacheWrite =
+    cache.put(
+      cacheRequest,
+      response.clone()
+    );
+
+
+  if (ctx?.waitUntil) {
+    ctx.waitUntil(
+      cacheWrite
+    );
+  }
+
+  else {
+    await cacheWrite;
+  }
+
+
+  return response;
+}
+
+
+/* =========================================
    WORKER
    ========================================= */
 
 export default {
   async fetch(
     request,
-    env
+    env,
+    ctx
   ) {
     const url =
       new URL(request.url);
@@ -1228,6 +1596,18 @@ export default {
       }
 
 
+      if (
+        url.pathname ===
+        "/api/analysis"
+      ) {
+        return await handleAnalysis(
+          request,
+          env,
+          ctx
+        );
+      }
+
+
       return jsonResponse(
         {
           error:
@@ -1245,7 +1625,7 @@ export default {
 
 
       if (
-        error.message ===
+        error?.message ===
         "SEC_USER_AGENT_NOT_CONFIGURED"
       ) {
         return jsonResponse(
