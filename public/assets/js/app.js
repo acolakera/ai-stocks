@@ -5,10 +5,16 @@ import {
   periodChanges
 } from "./data.js";
 
-import {
-  getFundamentals,
-  getAnalysis
-} from "./api.js?v=7";
+const APP_VERSION =
+  new URL(
+    import.meta.url
+  ).searchParams.get(
+    "v"
+  ) ?? "1";
+
+
+let getFundamentals;
+let getAnalysis;
 
 
 let activeTicker =
@@ -2312,17 +2318,44 @@ function setupPeriodButtons() {
    INITIALIZATION
    ========================================= */
 
-function initializeApp() {
-  setupSearchEvents();
+async function initializeApp() {
+  try {
+    const api =
+      await import(
+        `./api.js?v=${encodeURIComponent(APP_VERSION)}`
+      );
 
-  setupTickerButtons();
 
-  setupPeriodButtons();
+    getFundamentals =
+      api.getFundamentals;
+
+    getAnalysis =
+      api.getAnalysis;
 
 
-  renderStock(
-    DEFAULT_TICKER
-  );
+    setupSearchEvents();
+
+    setupTickerButtons();
+
+    setupPeriodButtons();
+
+
+    renderStock(
+      DEFAULT_TICKER
+    );
+  }
+
+  catch (error) {
+    console.error(
+      "Application initialization failed:",
+      error
+    );
+
+
+    showToast(
+      "The application could not be initialized."
+    );
+  }
 }
 
 
