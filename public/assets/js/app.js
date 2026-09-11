@@ -6,15 +6,30 @@ import {
 } from "./data.js";
 
 import {
-  getFundamentals
+  getFundamentals,
+  getAnalysis
 } from "./api.js";
 
 
-let activeTicker = DEFAULT_TICKER;
-let activePeriod = "1Y";
+let activeTicker =
+  DEFAULT_TICKER;
 
-let toastTimeout = null;
-let fundamentalsRequestId = 0;
+let activePeriod =
+  "1Y";
+
+let toastTimeout =
+  null;
+
+/*
+  Every time the selected stock changes,
+  this number increases.
+
+  Async responses belonging to an older
+  stock selection are ignored.
+*/
+
+let activeRequestId =
+  0;
 
 
 /* =========================================
@@ -25,11 +40,13 @@ function getElement(id) {
   const element =
     document.getElementById(id);
 
+
   if (!element) {
     throw new Error(
       `Missing required element: #${id}`
     );
   }
+
 
   return element;
 }
@@ -41,17 +58,22 @@ function createElement(
   textContent = ""
 ) {
   const element =
-    document.createElement(tagName);
+    document.createElement(
+      tagName
+    );
+
 
   if (className) {
     element.className =
       className;
   }
 
+
   if (textContent) {
     element.textContent =
       textContent;
   }
+
 
   return element;
 }
@@ -65,8 +87,10 @@ function showToast(message) {
   const toast =
     getElement("toast");
 
+
   toast.textContent =
     message;
+
 
   toast.classList.add(
     "show"
@@ -137,6 +161,24 @@ function formatPercent(
 }
 
 
+function formatCoverage(value) {
+  const number =
+    Number(value);
+
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return "—";
+  }
+
+
+  return (
+    `${Math.round(number)}%`
+  );
+}
+
+
 function getDemoMetric(
   stock,
   metricName
@@ -144,11 +186,15 @@ function getDemoMetric(
   const metric =
     stock.metrics.find(
       (item) =>
-        item[0] === metricName
+        item[0] ===
+        metricName
     );
 
 
-  return metric?.[1] ?? "—";
+  return (
+    metric?.[1] ??
+    "—"
+  );
 }
 
 
@@ -160,7 +206,10 @@ function renderMetricCards(
   metrics
 ) {
   const grid =
-    getElement("metricsGrid");
+    getElement(
+      "metricsGrid"
+    );
+
 
   grid.replaceChildren();
 
@@ -390,10 +439,12 @@ function renderLiveMetrics(
 
 
   const currentYear =
-    current?.fiscalYear ?? "—";
+    current?.fiscalYear ??
+    "—";
 
   const previousYear =
-    previous?.fiscalYear ?? "—";
+    previous?.fiscalYear ??
+    "—";
 
 
   renderMetricCards([
@@ -487,7 +538,7 @@ function renderLiveMetrics(
 
 
 /* =========================================
-   LIVE FUNDAMENTALS
+   FUNDAMENTALS REQUEST
    ========================================= */
 
 async function loadFundamentals(
@@ -505,14 +556,9 @@ async function loadFundamentals(
       );
 
 
-    /*
-      The user may switch stocks before
-      this request finishes.
-    */
-
     if (
       requestId !==
-        fundamentalsRequestId ||
+        activeRequestId ||
       ticker !==
         activeTicker
     ) {
@@ -527,7 +573,8 @@ async function loadFundamentals(
 
 
     const exchange =
-      response.company?.exchange ||
+      response.company
+        ?.exchange ||
       stock.exchange ||
       "NASDAQ";
 
@@ -547,7 +594,7 @@ async function loadFundamentals(
 
     if (
       requestId !==
-        fundamentalsRequestId ||
+        activeRequestId ||
       ticker !==
         activeTicker
     ) {
@@ -574,7 +621,7 @@ async function loadFundamentals(
 
 
 /* =========================================
-   BULL / BEAR CASES
+   CASE RENDERING
    ========================================= */
 
 function createCaseItem(text) {
@@ -610,31 +657,43 @@ function createCaseItem(text) {
 }
 
 
-function renderCases(stock) {
+function renderCases(
+  bull,
+  bear
+) {
   const bullList =
-    getElement("bullList");
+    getElement(
+      "bullList"
+    );
 
   const bearList =
-    getElement("bearList");
+    getElement(
+      "bearList"
+    );
 
 
   bullList.replaceChildren();
+
   bearList.replaceChildren();
 
 
-  stock.bull.forEach(
+  bull.forEach(
     (text) => {
       bullList.appendChild(
-        createCaseItem(text)
+        createCaseItem(
+          text
+        )
       );
     }
   );
 
 
-  stock.bear.forEach(
+  bear.forEach(
     (text) => {
       bearList.appendChild(
-        createCaseItem(text)
+        createCaseItem(
+          text
+        )
       );
     }
   );
@@ -645,18 +704,65 @@ function renderCases(stock) {
    FACTOR SCORES
    ========================================= */
 
-function renderFactors(stock) {
+const FACTOR_LABELS = {
+  financialHealth:
+    "Financial Health",
+
+  profitability:
+    "Profitability",
+
+  growth:
+    "Growth",
+
+  cashFlow:
+    "Cash Flow",
+
+  capitalEfficiency:
+    "Capital Efficiency",
+
+  earningsQuality:
+    "Earnings Quality"
+};
+
+
+function renderFactors(
+  factors
+) {
   const factorList =
-    getElement("factorList");
+    getElement(
+      "factorList"
+    );
 
 
   factorList.replaceChildren();
 
 
   Object.entries(
-    stock.factors
+    FACTOR_LABELS
   ).forEach(
-    ([name, score]) => {
+    ([key, label]) => {
+      const rawScore =
+        factors?.[key];
+
+
+      const hasScore =
+        Number.isFinite(
+          Number(rawScore)
+        );
+
+
+      const score =
+        hasScore
+          ? Math.max(
+              0,
+              Math.min(
+                Number(rawScore),
+                100
+              )
+            )
+          : null;
+
+
       const row =
         createElement(
           "div",
@@ -668,7 +774,7 @@ function renderFactors(stock) {
         createElement(
           "span",
           "factor-name",
-          name
+          label
         );
 
 
@@ -687,22 +793,22 @@ function renderFactors(stock) {
 
 
       fill.style.width =
-        `${
-          Math.max(
-            0,
-            Math.min(
-              score,
-              100
-            )
-          )
-        }%`;
+        score === null
+          ? "0%"
+          : `${score}%`;
 
 
       const scoreElement =
         createElement(
           "span",
           "factor-score",
-          String(score)
+          score === null
+            ? "—"
+            : String(
+                Math.round(
+                  score
+                )
+              )
         );
 
 
@@ -727,7 +833,7 @@ function renderFactors(stock) {
 
 
 /* =========================================
-   AI SCORE
+   SCORE RING
    ========================================= */
 
 function renderScoreRing(score) {
@@ -765,6 +871,272 @@ function renderScoreRing(score) {
 
 
 /* =========================================
+   AI RESEARCH STATES
+   ========================================= */
+
+function renderAnalysisLoading() {
+  getElement(
+    "aiScore"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "aiRating"
+  ).textContent =
+    "Loading";
+
+
+  getElement(
+    "aiHeading"
+  ).textContent =
+    "Generating fundamental research…";
+
+
+  getElement(
+    "aiSummary"
+  ).textContent =
+    "SEC fundamentals are being evaluated by the deterministic scoring model and AI research layer.";
+
+
+  getElement(
+    "signalView"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "confidenceValue"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "riskLevel"
+  ).textContent =
+    "—";
+
+
+  renderScoreRing(
+    0
+  );
+
+
+  renderCases(
+    [
+      "Generating evidence-based bull case…"
+    ],
+
+    [
+      "Generating evidence-based bear case…"
+    ]
+  );
+
+
+  renderFactors(
+    null
+  );
+}
+
+
+function renderAnalysisUnavailable() {
+  getElement(
+    "aiScore"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "aiRating"
+  ).textContent =
+    "Unavailable";
+
+
+  getElement(
+    "aiHeading"
+  ).textContent =
+    "Fundamental research unavailable";
+
+
+  getElement(
+    "aiSummary"
+  ).textContent =
+    "The AI research service could not be loaded. SEC fundamentals may still be available below.";
+
+
+  getElement(
+    "signalView"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "confidenceValue"
+  ).textContent =
+    "—";
+
+
+  getElement(
+    "riskLevel"
+  ).textContent =
+    "—";
+
+
+  renderScoreRing(
+    0
+  );
+
+
+  renderCases(
+    [
+      "AI research is temporarily unavailable."
+    ],
+
+    [
+      "No AI-generated risk narrative is currently available."
+    ]
+  );
+
+
+  renderFactors(
+    null
+  );
+}
+
+
+/* =========================================
+   LIVE AI RESEARCH
+   ========================================= */
+
+function renderLiveAnalysis(
+  analysis
+) {
+  getElement(
+    "aiScore"
+  ).textContent =
+    String(
+      analysis.score
+    );
+
+
+  getElement(
+    "aiRating"
+  ).textContent =
+    analysis.rating;
+
+
+  getElement(
+    "aiHeading"
+  ).textContent =
+    analysis.heading;
+
+
+  getElement(
+    "aiSummary"
+  ).textContent =
+    analysis.summary;
+
+
+  getElement(
+    "signalView"
+  ).textContent =
+    analysis.rating;
+
+
+  getElement(
+    "confidenceValue"
+  ).textContent =
+    formatCoverage(
+      analysis.dataCoverage
+    );
+
+
+  getElement(
+    "riskLevel"
+  ).textContent =
+    analysis.riskLevel;
+
+
+  renderScoreRing(
+    analysis.score
+  );
+
+
+  renderCases(
+    Array.isArray(
+      analysis.bull
+    )
+      ? analysis.bull
+      : [],
+
+    Array.isArray(
+      analysis.bear
+    )
+      ? analysis.bear
+      : []
+  );
+
+
+  renderFactors(
+    analysis.factors
+  );
+}
+
+
+async function loadAnalysis(
+  ticker,
+  requestId
+) {
+  try {
+    const response =
+      await getAnalysis(
+        ticker
+      );
+
+
+    if (
+      requestId !==
+        activeRequestId ||
+      ticker !==
+        activeTicker
+    ) {
+      return;
+    }
+
+
+    renderLiveAnalysis(
+      response.analysis
+    );
+  }
+
+  catch (error) {
+    console.error(
+      "AI analysis request failed:",
+      error
+    );
+
+
+    if (
+      requestId !==
+        activeRequestId ||
+      ticker !==
+        activeTicker
+    ) {
+      return;
+    }
+
+
+    renderAnalysisUnavailable();
+
+
+    showToast(
+      "AI research is temporarily unavailable."
+    );
+  }
+}
+
+
+/* =========================================
    CHART
    ========================================= */
 
@@ -772,20 +1144,26 @@ function getPeriodChange(
   stock,
   period
 ) {
-  if (period === "1D") {
+  if (
+    period === "1D"
+  ) {
     return (
       `${stock.change} 1D`
     );
   }
 
 
-  if (period === "1Y") {
+  if (
+    period === "1Y"
+  ) {
     return stock.yearly;
   }
 
 
   return (
-    periodChanges[period] ??
+    periodChanges[
+      period
+    ] ??
     ""
   );
 }
@@ -795,7 +1173,9 @@ function renderChartPeriod(
   period
 ) {
   const linePath =
-    chartPaths[period];
+    chartPaths[
+      period
+    ];
 
 
   if (!linePath) {
@@ -857,7 +1237,9 @@ function renderChartPeriod(
 
         button.setAttribute(
           "aria-pressed",
-          String(isActive)
+          String(
+            isActive
+          )
         );
       }
     );
@@ -870,7 +1252,9 @@ function renderChartPeriod(
 
 function renderStock(ticker) {
   const stock =
-    demoStocks[ticker];
+    demoStocks[
+      ticker
+    ];
 
 
   if (!stock) {
@@ -883,7 +1267,7 @@ function renderStock(ticker) {
 
 
   const requestId =
-    ++fundamentalsRequestId;
+    ++activeRequestId;
 
 
   getElement(
@@ -928,48 +1312,6 @@ function renderStock(ticker) {
     stock.price;
 
 
-  getElement(
-    "aiScore"
-  ).textContent =
-    String(stock.score);
-
-
-  getElement(
-    "aiRating"
-  ).textContent =
-    stock.rating;
-
-
-  getElement(
-    "aiHeading"
-  ).textContent =
-    stock.heading;
-
-
-  getElement(
-    "aiSummary"
-  ).textContent =
-    stock.summary;
-
-
-  getElement(
-    "signalView"
-  ).textContent =
-    stock.rating;
-
-
-  getElement(
-    "confidenceValue"
-  ).textContent =
-    stock.confidence;
-
-
-  getElement(
-    "riskLevel"
-  ).textContent =
-    stock.risk;
-
-
   const marketMeta =
     document.querySelector(
       ".market-meta"
@@ -982,21 +1324,18 @@ function renderStock(ticker) {
   }
 
 
-  renderScoreRing(
-    stock.score
-  );
+  /*
+    Never display the old demo AI data
+    while real analysis is loading.
+  */
+
+  renderAnalysisLoading();
+
 
   renderMetricsLoading(
     stock
   );
 
-  renderCases(
-    stock
-  );
-
-  renderFactors(
-    stock
-  );
 
   renderChartPeriod(
     activePeriod
@@ -1004,12 +1343,19 @@ function renderStock(ticker) {
 
 
   /*
-    Intentionally not awaited:
-    the rest of the UI renders instantly
-    while SEC data loads independently.
+    Fundamentals and AI research load
+    independently.
+
+    Neither blocks the initial UI render.
   */
 
   void loadFundamentals(
+    ticker,
+    requestId
+  );
+
+
+  void loadAnalysis(
     ticker,
     requestId
   );
@@ -1085,13 +1431,19 @@ function analyzeStock() {
       "Enter a ticker symbol to analyze."
     );
 
+
     searchInput.focus();
+
 
     return;
   }
 
 
-  if (!demoStocks[ticker]) {
+  if (
+    !demoStocks[
+      ticker
+    ]
+  ) {
     showToast(
       "Research preview: try AAPL, NVDA, MSFT, GOOGL or AMZN."
     );
@@ -1136,10 +1488,11 @@ function setupSearchEvents() {
   );
 
 
-  searchButton?.addEventListener(
-    "click",
-    analyzeStock
-  );
+  searchButton
+    ?.addEventListener(
+      "click",
+      analyzeStock
+    );
 }
 
 
@@ -1154,7 +1507,8 @@ function setupTickerButtons() {
           "click",
           () => {
             const ticker =
-              button.dataset.ticker;
+              button.dataset
+                .ticker;
 
 
             if (ticker) {
@@ -1180,7 +1534,8 @@ function setupPeriodButtons() {
           "click",
           () => {
             const period =
-              button.dataset.period;
+              button.dataset
+                .period;
 
 
             if (period) {
@@ -1201,8 +1556,11 @@ function setupPeriodButtons() {
 
 function initializeApp() {
   setupSearchEvents();
+
   setupTickerButtons();
+
   setupPeriodButtons();
+
 
   renderStock(
     DEFAULT_TICKER
