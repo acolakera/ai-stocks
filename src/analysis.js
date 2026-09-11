@@ -752,13 +752,19 @@ generateFundamentalAnalysis(
       },
 
 
-      scoring: {
-        rawMetrics:
-          scoring.rawMetrics,
+scoring: {
+  factorDetails:
+    scoring.factorDetails,
 
-        methodology:
-          scoring.methodology
-      },
+  overallBreakdown:
+    scoring.overallBreakdown,
+
+  rawMetrics:
+    scoring.rawMetrics,
+
+  methodology:
+    scoring.methodology
+},
 
 
       meta: {
