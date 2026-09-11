@@ -3,6 +3,120 @@ const SCORING_VERSION =
 
 
 /* =========================================
+   METHODOLOGY CONSTANTS
+   ========================================= */
+
+const OVERALL_WEIGHTS = {
+  financialHealth: 15,
+  profitability: 20,
+  growth: 20,
+  cashFlow: 20,
+  capitalEfficiency: 10,
+  earningsQuality: 15
+};
+
+
+const BANDS = {
+  equityRatio: [
+    [0, 10],
+    [10, 25],
+    [20, 45],
+    [30, 65],
+    [40, 80],
+    [50, 90],
+    [65, 100]
+  ],
+
+  cashRatio: [
+    [0, 20],
+    [2, 35],
+    [5, 55],
+    [10, 75],
+    [20, 90],
+    [30, 100]
+  ],
+
+  netMargin: [
+    [-10, 0],
+    [0, 25],
+    [5, 45],
+    [10, 60],
+    [20, 80],
+    [30, 95],
+    [40, 100]
+  ],
+
+  revenueGrowth: [
+    [-20, 0],
+    [-10, 15],
+    [0, 40],
+    [5, 55],
+    [10, 70],
+    [20, 90],
+    [30, 100]
+  ],
+
+  epsGrowth: [
+    [-30, 0],
+    [-10, 20],
+    [0, 40],
+    [10, 60],
+    [20, 75],
+    [40, 95],
+    [60, 100]
+  ],
+
+  freeCashFlowMargin: [
+    [-10, 0],
+    [0, 30],
+    [5, 50],
+    [10, 65],
+    [20, 85],
+    [30, 95],
+    [40, 100]
+  ],
+
+  freeCashFlowGrowth: [
+    [-30, 0],
+    [-10, 25],
+    [0, 50],
+    [10, 65],
+    [25, 80],
+    [50, 95],
+    [75, 100]
+  ],
+
+  returnOnEquity: [
+    [-20, 0],
+    [0, 30],
+    [10, 50],
+    [20, 70],
+    [30, 85],
+    [40, 95],
+    [60, 100]
+  ],
+
+  operatingCashConversion: [
+    [0, 0],
+    [50, 40],
+    [75, 65],
+    [90, 80],
+    [100, 95],
+    [120, 100]
+  ],
+
+  freeCashConversion: [
+    [0, 20],
+    [25, 40],
+    [50, 60],
+    [75, 80],
+    [100, 95],
+    [125, 100]
+  ]
+};
+
+
+/* =========================================
    NUMBER HELPERS
    ========================================= */
 
@@ -75,22 +189,6 @@ function roundScore(value) {
 /* =========================================
    LINEAR SCORE MAPPING
    ========================================= */
-
-/*
-  Converts a raw financial metric into
-  a 0–100 score using transparent,
-  piecewise-linear bands.
-
-  Example:
-
-  [
-    [0, 20],
-    [10, 60],
-    [20, 90]
-  ]
-
-  A raw value of 15 would score 75.
-*/
 
 function scoreFromBands(
   value,
@@ -301,31 +399,14 @@ function scoreFinancialHealth(
   const equityRatioScore =
     scoreFromBands(
       raw.equityToAssetsPercent,
-
-      [
-        [0, 10],
-        [10, 25],
-        [20, 45],
-        [30, 65],
-        [40, 80],
-        [50, 90],
-        [65, 100]
-      ]
+      BANDS.equityRatio
     );
 
 
   const cashRatioScore =
     scoreFromBands(
       raw.cashToAssetsPercent,
-
-      [
-        [0, 20],
-        [2, 35],
-        [5, 55],
-        [10, 75],
-        [20, 90],
-        [30, 100]
-      ]
+      BANDS.cashRatio
     );
 
 
@@ -358,16 +439,7 @@ function scoreProfitability(
 ) {
   return scoreFromBands(
     raw.netMarginPercent,
-
-    [
-      [-10, 0],
-      [0, 25],
-      [5, 45],
-      [10, 60],
-      [20, 80],
-      [30, 95],
-      [40, 100]
-    ]
+    BANDS.netMargin
   );
 }
 
@@ -382,32 +454,14 @@ function scoreGrowth(
   const revenueGrowthScore =
     scoreFromBands(
       raw.revenueGrowthPercent,
-
-      [
-        [-20, 0],
-        [-10, 15],
-        [0, 40],
-        [5, 55],
-        [10, 70],
-        [20, 90],
-        [30, 100]
-      ]
+      BANDS.revenueGrowth
     );
 
 
   const epsGrowthScore =
     scoreFromBands(
       raw.epsGrowthPercent,
-
-      [
-        [-30, 0],
-        [-10, 20],
-        [0, 40],
-        [10, 60],
-        [20, 75],
-        [40, 95],
-        [60, 100]
-      ]
+      BANDS.epsGrowth
     );
 
 
@@ -441,32 +495,14 @@ function scoreCashFlow(
   const marginScore =
     scoreFromBands(
       raw.freeCashFlowMarginPercent,
-
-      [
-        [-10, 0],
-        [0, 30],
-        [5, 50],
-        [10, 65],
-        [20, 85],
-        [30, 95],
-        [40, 100]
-      ]
+      BANDS.freeCashFlowMargin
     );
 
 
   const growthScore =
     scoreFromBands(
       raw.freeCashFlowGrowthPercent,
-
-      [
-        [-30, 0],
-        [-10, 25],
-        [0, 50],
-        [10, 65],
-        [25, 80],
-        [50, 95],
-        [75, 100]
-      ]
+      BANDS.freeCashFlowGrowth
     );
 
 
@@ -510,32 +546,14 @@ function scoreCapitalEfficiency(
   const roeScore =
     scoreFromBands(
       raw.returnOnEquityPercent,
-
-      [
-        [-20, 0],
-        [0, 30],
-        [10, 50],
-        [20, 70],
-        [30, 85],
-        [40, 95],
-        [60, 100]
-      ]
+      BANDS.returnOnEquity
     );
 
 
   const equityRatioScore =
     scoreFromBands(
       raw.equityToAssetsPercent,
-
-      [
-        [0, 10],
-        [10, 25],
-        [20, 45],
-        [30, 65],
-        [40, 80],
-        [50, 90],
-        [65, 100]
-      ]
+      BANDS.equityRatio
     );
 
 
@@ -569,30 +587,14 @@ function scoreEarningsQuality(
   const operatingCashConversionScore =
     scoreFromBands(
       raw.operatingCashFlowToNetIncomePercent,
-
-      [
-        [0, 0],
-        [50, 40],
-        [75, 65],
-        [90, 80],
-        [100, 95],
-        [120, 100]
-      ]
+      BANDS.operatingCashConversion
     );
 
 
   const freeCashConversionScore =
     scoreFromBands(
       raw.freeCashFlowToNetIncomePercent,
-
-      [
-        [0, 20],
-        [25, 40],
-        [50, 60],
-        [75, 80],
-        [100, 95],
-        [125, 100]
-      ]
+      BANDS.freeCashConversion
     );
 
 
@@ -613,6 +615,588 @@ function scoreEarningsQuality(
         0.3
     }
   ]);
+}
+
+
+/* =========================================
+   EXPLAINABILITY HELPERS
+   ========================================= */
+
+function buildComponentBreakdown(
+  components
+) {
+  const availableComponents =
+    components.filter(
+      (component) =>
+        component.score !== null &&
+        component.score !== undefined &&
+        Number.isFinite(
+          component.score
+        )
+    );
+
+
+  const availableWeight =
+    availableComponents.reduce(
+      (
+        total,
+        component
+      ) =>
+        total +
+        component.configuredWeightPercent,
+      0
+    );
+
+
+  return components.map(
+    (component) => {
+      const available =
+        (
+          component.score !== null &&
+          component.score !== undefined &&
+          Number.isFinite(
+            component.score
+          ) &&
+          availableWeight > 0
+        );
+
+
+      const effectiveWeightPercent =
+        available
+          ? (
+              component
+                .configuredWeightPercent /
+              availableWeight
+            ) * 100
+          : 0;
+
+
+      const contribution =
+        available
+          ? (
+              component.score *
+              effectiveWeightPercent
+            ) / 100
+          : null;
+
+
+      return {
+        key:
+          component.key,
+
+        label:
+          component.label,
+
+        rawValue:
+          finiteNumber(
+            component.rawValue
+          ),
+
+        unit:
+          component.unit ??
+          null,
+
+        componentScore:
+          finiteNumber(
+            component.score
+          ),
+
+        configuredWeightPercent:
+          component.configuredWeightPercent,
+
+        effectiveWeightPercent,
+
+        contribution
+      };
+    }
+  );
+}
+
+
+function buildFactorDetail(
+  finalScore,
+  components
+) {
+  const breakdown =
+    buildComponentBreakdown(
+      components
+    );
+
+
+  const contributions =
+    breakdown
+      .map(
+        (component) =>
+          component.contribution
+      )
+      .filter(
+        (value) =>
+          value !== null &&
+          Number.isFinite(value)
+      );
+
+
+  const unroundedScore =
+    contributions.length > 0
+      ? contributions.reduce(
+          (
+            total,
+            value
+          ) =>
+            total + value,
+          0
+        )
+      : null;
+
+
+  return {
+    unroundedScore,
+
+    finalScore,
+
+    components:
+      breakdown
+  };
+}
+
+
+/* =========================================
+   FACTOR DETAILS
+   ========================================= */
+
+function buildFactorDetails(
+  raw,
+  factors
+) {
+  const equityRatioScore =
+    scoreFromBands(
+      raw.equityToAssetsPercent,
+      BANDS.equityRatio
+    );
+
+
+  const cashRatioScore =
+    scoreFromBands(
+      raw.cashToAssetsPercent,
+      BANDS.cashRatio
+    );
+
+
+  const profitabilityScore =
+    scoreFromBands(
+      raw.netMarginPercent,
+      BANDS.netMargin
+    );
+
+
+  const revenueGrowthScore =
+    scoreFromBands(
+      raw.revenueGrowthPercent,
+      BANDS.revenueGrowth
+    );
+
+
+  const epsGrowthScore =
+    scoreFromBands(
+      raw.epsGrowthPercent,
+      BANDS.epsGrowth
+    );
+
+
+  const freeCashFlowMarginScore =
+    scoreFromBands(
+      raw.freeCashFlowMarginPercent,
+      BANDS.freeCashFlowMargin
+    );
+
+
+  const freeCashFlowGrowthScore =
+    scoreFromBands(
+      raw.freeCashFlowGrowthPercent,
+      BANDS.freeCashFlowGrowth
+    );
+
+
+  const roeScore =
+    scoreFromBands(
+      raw.returnOnEquityPercent,
+      BANDS.returnOnEquity
+    );
+
+
+  const operatingCashConversionScore =
+    scoreFromBands(
+      raw.operatingCashFlowToNetIncomePercent,
+      BANDS.operatingCashConversion
+    );
+
+
+  const freeCashConversionScore =
+    scoreFromBands(
+      raw.freeCashFlowToNetIncomePercent,
+      BANDS.freeCashConversion
+    );
+
+
+  return {
+    financialHealth:
+      buildFactorDetail(
+        factors.financialHealth,
+        [
+          {
+            key:
+              "equityToAssetsPercent",
+
+            label:
+              "Equity / Assets",
+
+            rawValue:
+              raw.equityToAssetsPercent,
+
+            unit:
+              "%",
+
+            score:
+              equityRatioScore,
+
+            configuredWeightPercent:
+              70
+          },
+
+          {
+            key:
+              "cashToAssetsPercent",
+
+            label:
+              "Cash / Assets",
+
+            rawValue:
+              raw.cashToAssetsPercent,
+
+            unit:
+              "%",
+
+            score:
+              cashRatioScore,
+
+            configuredWeightPercent:
+              30
+          }
+        ]
+      ),
+
+
+    profitability:
+      buildFactorDetail(
+        factors.profitability,
+        [
+          {
+            key:
+              "netMarginPercent",
+
+            label:
+              "Net Margin",
+
+            rawValue:
+              raw.netMarginPercent,
+
+            unit:
+              "%",
+
+            score:
+              profitabilityScore,
+
+            configuredWeightPercent:
+              100
+          }
+        ]
+      ),
+
+
+    growth:
+      buildFactorDetail(
+        factors.growth,
+        [
+          {
+            key:
+              "revenueGrowthPercent",
+
+            label:
+              "Revenue Growth",
+
+            rawValue:
+              raw.revenueGrowthPercent,
+
+            unit:
+              "%",
+
+            score:
+              revenueGrowthScore,
+
+            configuredWeightPercent:
+              55
+          },
+
+          {
+            key:
+              "epsGrowthPercent",
+
+            label:
+              "EPS Growth",
+
+            rawValue:
+              raw.epsGrowthPercent,
+
+            unit:
+              "%",
+
+            score:
+              epsGrowthScore,
+
+            configuredWeightPercent:
+              45
+          }
+        ]
+      ),
+
+
+    cashFlow:
+      buildFactorDetail(
+        factors.cashFlow,
+        [
+          {
+            key:
+              "freeCashFlowMarginPercent",
+
+            label:
+              "FCF Margin",
+
+            rawValue:
+              raw.freeCashFlowMarginPercent,
+
+            unit:
+              "%",
+
+            score:
+              freeCashFlowMarginScore,
+
+            configuredWeightPercent:
+              70
+          },
+
+          {
+            key:
+              "freeCashFlowGrowthPercent",
+
+            label:
+              "FCF Growth",
+
+            rawValue:
+              raw.freeCashFlowGrowthPercent,
+
+            unit:
+              "%",
+
+            score:
+              freeCashFlowGrowthScore,
+
+            configuredWeightPercent:
+              30
+          }
+        ]
+      ),
+
+
+    capitalEfficiency:
+      buildFactorDetail(
+        factors.capitalEfficiency,
+        [
+          {
+            key:
+              "returnOnEquityPercent",
+
+            label:
+              "Return on Equity",
+
+            rawValue:
+              raw.returnOnEquityPercent,
+
+            unit:
+              "%",
+
+            score:
+              roeScore,
+
+            configuredWeightPercent:
+              70
+          },
+
+          {
+            key:
+              "equityToAssetsPercent",
+
+            label:
+              "Equity / Assets",
+
+            rawValue:
+              raw.equityToAssetsPercent,
+
+            unit:
+              "%",
+
+            score:
+              equityRatioScore,
+
+            configuredWeightPercent:
+              30
+          }
+        ]
+      ),
+
+
+    earningsQuality:
+      buildFactorDetail(
+        factors.earningsQuality,
+        [
+          {
+            key:
+              "operatingCashFlowToNetIncomePercent",
+
+            label:
+              "Operating Cash Flow / Net Income",
+
+            rawValue:
+              raw.operatingCashFlowToNetIncomePercent,
+
+            unit:
+              "%",
+
+            score:
+              operatingCashConversionScore,
+
+            configuredWeightPercent:
+              70
+          },
+
+          {
+            key:
+              "freeCashFlowToNetIncomePercent",
+
+            label:
+              "Free Cash Flow / Net Income",
+
+            rawValue:
+              raw.freeCashFlowToNetIncomePercent,
+
+            unit:
+              "%",
+
+            score:
+              freeCashConversionScore,
+
+            configuredWeightPercent:
+              30
+          }
+        ]
+      )
+  };
+}
+
+
+/* =========================================
+   OVERALL BREAKDOWN
+   ========================================= */
+
+function buildOverallBreakdown(
+  factors,
+  finalScore
+) {
+  const labels = {
+    financialHealth:
+      "Financial Health",
+
+    profitability:
+      "Profitability",
+
+    growth:
+      "Growth",
+
+    cashFlow:
+      "Cash Flow",
+
+    capitalEfficiency:
+      "Capital Efficiency",
+
+    earningsQuality:
+      "Earnings Quality"
+  };
+
+
+  const components =
+    Object.entries(
+      OVERALL_WEIGHTS
+    ).map(
+      ([key, weight]) => ({
+        key,
+
+        label:
+          labels[key],
+
+        rawValue:
+          factors[key],
+
+        unit:
+          "score",
+
+        score:
+          factors[key],
+
+        configuredWeightPercent:
+          weight
+      })
+    );
+
+
+  const breakdown =
+    buildComponentBreakdown(
+      components
+    );
+
+
+  const contributions =
+    breakdown
+      .map(
+        (component) =>
+          component.contribution
+      )
+      .filter(
+        (value) =>
+          value !== null &&
+          Number.isFinite(value)
+      );
+
+
+  const unroundedScore =
+    contributions.length > 0
+      ? contributions.reduce(
+          (
+            total,
+            value
+          ) =>
+            total + value,
+          0
+        )
+      : null;
+
+
+  return {
+    unroundedScore,
+
+    finalScore,
+
+    factors:
+      breakdown
+  };
 }
 
 
@@ -996,6 +1580,20 @@ export function buildFundamentalScore(
     );
 
 
+  const factorDetails =
+    buildFactorDetails(
+      raw,
+      factors
+    );
+
+
+  const overallBreakdown =
+    buildOverallBreakdown(
+      factors,
+      overallScore
+    );
+
+
   return {
     version:
       SCORING_VERSION,
@@ -1019,6 +1617,10 @@ export function buildFundamentalScore(
       ),
 
     factors,
+
+    factorDetails,
+
+    overallBreakdown,
 
     rawMetrics: {
       revenueGrowthPercent:
@@ -1060,24 +1662,11 @@ export function buildFundamentalScore(
         "0-100",
 
       overallWeights: {
-        financialHealth:
-          15,
-
-        profitability:
-          20,
-
-        growth:
-          20,
-
-        cashFlow:
-          20,
-
-        capitalEfficiency:
-          10,
-
-        earningsQuality:
-          15
+        ...OVERALL_WEIGHTS
       },
+
+      missingDataPolicy:
+        "Missing inputs are excluded rather than treated as zero. Remaining available weights are normalized.",
 
       note:
         "Scores are deterministic and based only on supplied annual SEC fundamentals. They are not investment recommendations."
