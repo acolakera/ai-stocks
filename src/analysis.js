@@ -1,3 +1,8 @@
+import {
+  buildFundamentalScore
+} from "./scoring.js";
+
+
 const OPENAI_RESPONSES_URL =
   "https://api.openai.com/v1/responses";
 
@@ -13,62 +18,38 @@ const OPENAI_TIMEOUT_MS =
    ========================================= */
 
 const ANALYSIS_INSTRUCTIONS = `
-You are the fundamental equity research engine for AI Stocks.
+You are the fundamental equity research narrative engine for AI Stocks.
 
 Analyze ONLY the financial data explicitly provided in the input.
 
-The input is sourced from SEC EDGAR annual filings and derived metrics
-calculated from those filings.
+The financial data is sourced from SEC EDGAR annual filings.
+The numerical score, rating, risk level, data coverage, and factor
+scores are calculated separately by a deterministic scoring engine.
 
 Important rules:
 
-1. Do not use outside knowledge.
-2. Do not infer or invent current share price.
-3. Do not infer or invent market capitalization.
-4. Do not infer or invent P/E or other valuation multiples.
-5. Do not use news, analyst estimates, price targets, guidance,
-   market momentum, technical analysis, or events not contained
-   in the provided data.
-6. Do not give a buy, sell, or hold recommendation.
-7. "rating" describes fundamental quality only. It is not an
-   investment recommendation.
-8. "score" is a fundamental research score from 0 to 100,
-   where a higher score means stronger overall fundamentals
-   based only on the supplied data.
-9. Be conservative. Missing data must not be treated as zero.
-10. Do not exaggerate certainty.
-11. Keep the summary concise and professional.
-12. Bull and bear cases must be grounded directly in the
+1. Do not create, alter, estimate, or override any score.
+2. Do not create, alter, estimate, or override the rating.
+3. Do not create, alter, estimate, or override the risk level.
+4. Do not create, alter, estimate, or override factor scores.
+5. Do not use outside knowledge.
+6. Do not infer or invent current share price.
+7. Do not infer or invent market capitalization.
+8. Do not infer or invent P/E or other valuation multiples.
+9. Do not use news, analyst estimates, price targets, guidance,
+   technical analysis, market momentum, or information not
+   contained in the supplied input.
+10. Do not give a buy, sell, or hold recommendation.
+11. Missing financial data must not be treated as zero.
+12. Do not exaggerate certainty.
+13. Keep the heading concise and professional.
+14. Keep the summary concise and evidence-based.
+15. Every bull and bear point must be directly supported by the
     supplied financial figures.
-13. Factor scores must be integers from 0 to 100.
-14. Confidence must be an integer from 0 to 100.
-15. Score must be an integer from 0 to 100.
-
-Factor interpretation:
-
-- financialHealth:
-  balance sheet strength and liquidity.
-
-- profitability:
-  profitability and margins.
-
-- growth:
-  revenue and diluted EPS growth.
-
-- cashFlow:
-  operating cash flow, free cash flow and FCF margin.
-
-- capitalEfficiency:
-  efficiency of shareholder capital, including ROE where available.
-
-- earningsQuality:
-  relationship between reported earnings and cash generation.
-
-Risk level must be one of:
-Low, Moderate, Elevated, High.
-
-Rating must be one of:
-Positive, Neutral, Negative.
+16. When discussing unusually high ROE, remember that a small
+    equity base can mechanically amplify ROE.
+17. The deterministic scoring output is context for the narrative,
+    not an investment recommendation.
 
 This research is informational and is not investment advice.
 `;
@@ -84,41 +65,12 @@ const ANALYSIS_SCHEMA = {
   additionalProperties: false,
 
   properties: {
-    score: {
-      type: "integer"
-    },
-
-    rating: {
-      type: "string",
-
-      enum: [
-        "Positive",
-        "Neutral",
-        "Negative"
-      ]
-    },
-
     heading: {
       type: "string"
     },
 
     summary: {
       type: "string"
-    },
-
-    confidence: {
-      type: "integer"
-    },
-
-    riskLevel: {
-      type: "string",
-
-      enum: [
-        "Low",
-        "Moderate",
-        "Elevated",
-        "High"
-      ]
     },
 
     bullCase: {
@@ -171,60 +123,14 @@ const ANALYSIS_SCHEMA = {
         "two",
         "three"
       ]
-    },
-
-    factors: {
-      type: "object",
-
-      additionalProperties: false,
-
-      properties: {
-        financialHealth: {
-          type: "integer"
-        },
-
-        profitability: {
-          type: "integer"
-        },
-
-        growth: {
-          type: "integer"
-        },
-
-        cashFlow: {
-          type: "integer"
-        },
-
-        capitalEfficiency: {
-          type: "integer"
-        },
-
-        earningsQuality: {
-          type: "integer"
-        }
-      },
-
-      required: [
-        "financialHealth",
-        "profitability",
-        "growth",
-        "cashFlow",
-        "capitalEfficiency",
-        "earningsQuality"
-      ]
     }
   },
 
   required: [
-    "score",
-    "rating",
     "heading",
     "summary",
-    "confidence",
-    "riskLevel",
     "bullCase",
-    "bearCase",
-    "factors"
+    "bearCase"
   ]
 };
 
@@ -273,7 +179,8 @@ function metricValue(metric) {
 
 function buildResearchInput(
   company,
-  fundamentals
+  fundamentals,
+  scoring
 ) {
   const current =
     fundamentals?.current ?? null;
@@ -467,6 +374,27 @@ function buildResearchInput(
         metricValue(
           derived?.averageEquity
         )
+    },
+
+
+    deterministicScoring: {
+      version:
+        scoring.version,
+
+      score:
+        scoring.score,
+
+      rating:
+        scoring.rating,
+
+      riskLevel:
+        scoring.riskLevel,
+
+      dataCoveragePercent:
+        scoring.dataCoverage,
+
+      factors:
+        scoring.factors
     }
   };
 }
@@ -515,17 +443,8 @@ function extractOutputText(
 
 
 /* =========================================
-   VALIDATION HELPERS
+   VALIDATION
    ========================================= */
-
-function isScore(value) {
-  return (
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 100
-  );
-}
-
 
 function isNonEmptyString(value) {
   return (
@@ -551,77 +470,22 @@ function validateCase(caseData) {
 }
 
 
-function validateFactors(
-  factors
+function normalizeNarrative(
+  narrative
 ) {
-  if (!factors) {
-    return false;
-  }
-
-
-  return [
-    factors.financialHealth,
-    factors.profitability,
-    factors.growth,
-    factors.cashFlow,
-    factors.capitalEfficiency,
-    factors.earningsQuality
-  ].every(isScore);
-}
-
-
-/* =========================================
-   NORMALIZE MODEL OUTPUT
-   ========================================= */
-
-function normalizeAnalysis(
-  analysis
-) {
-  const validRatings =
-    new Set([
-      "Positive",
-      "Neutral",
-      "Negative"
-    ]);
-
-
-  const validRiskLevels =
-    new Set([
-      "Low",
-      "Moderate",
-      "Elevated",
-      "High"
-    ]);
-
-
   if (
-    !analysis ||
-    !isScore(
-      analysis.score
-    ) ||
-    !isScore(
-      analysis.confidence
-    ) ||
-    !validRatings.has(
-      analysis.rating
-    ) ||
-    !validRiskLevels.has(
-      analysis.riskLevel
+    !narrative ||
+    !isNonEmptyString(
+      narrative.heading
     ) ||
     !isNonEmptyString(
-      analysis.heading
-    ) ||
-    !isNonEmptyString(
-      analysis.summary
+      narrative.summary
     ) ||
     !validateCase(
-      analysis.bullCase
+      narrative.bullCase
     ) ||
     !validateCase(
-      analysis.bearCase
-    ) ||
-    !validateFactors(
-      analysis.factors
+      narrative.bearCase
     )
   ) {
     throw new Error(
@@ -631,67 +495,23 @@ function normalizeAnalysis(
 
 
   return {
-    score:
-      analysis.score,
-
-    rating:
-      analysis.rating,
-
     heading:
-      analysis.heading.trim(),
+      narrative.heading.trim(),
 
     summary:
-      analysis.summary.trim(),
-
-    confidence:
-      analysis.confidence,
-
-    riskLevel:
-      analysis.riskLevel,
+      narrative.summary.trim(),
 
     bull: [
-      analysis.bullCase.one.trim(),
-      analysis.bullCase.two.trim(),
-      analysis.bullCase.three.trim()
+      narrative.bullCase.one.trim(),
+      narrative.bullCase.two.trim(),
+      narrative.bullCase.three.trim()
     ],
 
     bear: [
-      analysis.bearCase.one.trim(),
-      analysis.bearCase.two.trim(),
-      analysis.bearCase.three.trim()
-    ],
-
-    factors: {
-      financialHealth:
-        analysis
-          .factors
-          .financialHealth,
-
-      profitability:
-        analysis
-          .factors
-          .profitability,
-
-      growth:
-        analysis
-          .factors
-          .growth,
-
-      cashFlow:
-        analysis
-          .factors
-          .cashFlow,
-
-      capitalEfficiency:
-        analysis
-          .factors
-          .capitalEfficiency,
-
-      earningsQuality:
-        analysis
-          .factors
-          .earningsQuality
-    }
+      narrative.bearCase.one.trim(),
+      narrative.bearCase.two.trim(),
+      narrative.bearCase.three.trim()
+    ]
   };
 }
 
@@ -717,10 +537,35 @@ generateFundamentalAnalysis(
   }
 
 
+  /*
+    Scores are calculated BEFORE the
+    model is called.
+
+    OpenAI does not choose any numerical
+    score in this architecture.
+  */
+
+  const scoring =
+    buildFundamentalScore(
+      fundamentals
+    );
+
+
+  if (
+    scoring?.score === null ||
+    scoring?.score === undefined
+  ) {
+    throw new Error(
+      "FUNDAMENTAL_SCORE_UNAVAILABLE"
+    );
+  }
+
+
   const researchInput =
     buildResearchInput(
       company,
-      fundamentals
+      fundamentals,
+      scoring
     );
 
 
@@ -789,7 +634,7 @@ generateFundamentalAnalysis(
                     "json_schema",
 
                   name:
-                    "fundamental_equity_research",
+                    "fundamental_equity_research_narrative",
 
                   strict:
                     true,
@@ -846,11 +691,11 @@ generateFundamentalAnalysis(
     }
 
 
-    let parsedAnalysis;
+    let parsedNarrative;
 
 
     try {
-      parsedAnalysis =
+      parsedNarrative =
         JSON.parse(
           outputText
         );
@@ -863,14 +708,54 @@ generateFundamentalAnalysis(
     }
 
 
-    const analysis =
-      normalizeAnalysis(
-        parsedAnalysis
+    const narrative =
+      normalizeNarrative(
+        parsedNarrative
       );
 
 
     return {
-      analysis,
+      analysis: {
+        score:
+          scoring.score,
+
+        rating:
+          scoring.rating,
+
+        riskLevel:
+          scoring.riskLevel,
+
+        dataCoverage:
+          scoring.dataCoverage,
+
+        scoringVersion:
+          scoring.version,
+
+        heading:
+          narrative.heading,
+
+        summary:
+          narrative.summary,
+
+        bull:
+          narrative.bull,
+
+        bear:
+          narrative.bear,
+
+        factors:
+          scoring.factors
+      },
+
+
+      scoring: {
+        rawMetrics:
+          scoring.rawMetrics,
+
+        methodology:
+          scoring.methodology
+      },
+
 
       meta: {
         model:
