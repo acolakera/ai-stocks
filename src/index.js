@@ -1,6 +1,9 @@
 const SEC_TICKERS_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
 
+const SEC_COMPANY_FACTS_URL =
+  "https://data.sec.gov/api/xbrl/companyfacts";
+
 const TICKER_PATTERN =
   /^[A-Z0-9.-]{1,12}$/;
 
@@ -35,7 +38,7 @@ function jsonResponse(
 
 
 /* =========================================
-   TICKER NORMALIZATION
+   BASIC HELPERS
    ========================================= */
 
 function normalizeTicker(value) {
@@ -45,8 +48,37 @@ function normalizeTicker(value) {
 }
 
 
+function isAnnualForm(form) {
+  return (
+    form === "10-K" ||
+    form === "10-K/A"
+  );
+}
+
+
+function compareFactsNewestFirst(
+  a,
+  b
+) {
+  const endDifference =
+    String(b.end ?? "")
+      .localeCompare(
+        String(a.end ?? "")
+      );
+
+  if (endDifference !== 0) {
+    return endDifference;
+  }
+
+  return String(b.filed ?? "")
+    .localeCompare(
+      String(a.filed ?? "")
+    );
+}
+
+
 /* =========================================
-   SEC REQUEST
+   SEC REQUESTS
    ========================================= */
 
 async function fetchSecJson(
@@ -143,12 +175,11 @@ async function findSecCompany(
 
   const row =
     rows.find((item) => {
-      const ticker =
+      return (
         normalizeTicker(
           item[tickerIndex]
-        );
-
-      return ticker === symbol;
+        ) === symbol
+      );
     });
 
 
@@ -188,7 +219,523 @@ async function findSecCompany(
 
 
 /* =========================================
-   ROUTES
+   COMPANY FACTS
+   ========================================= */
+
+async function fetchCompanyFacts(
+  cik,
+  env
+) {
+  const url =
+    `${SEC_COMPANY_FACTS_URL}/CIK${cik}.json`;
+
+  return fetchSecJson(
+    url,
+    env,
+    21600
+  );
+}
+
+
+/* =========================================
+   XBRL HELPERS
+   ========================================= */
+
+function getConcept(
+  companyFacts,
+  conceptNames
+) {
+  const usGaap =
+    companyFacts?.facts?.["us-gaap"];
+
+  if (!usGaap) {
+    return null;
+  }
+
+  for (
+    const conceptName
+    of conceptNames
+  ) {
+    const concept =
+      usGaap[conceptName];
+
+    if (concept) {
+      return {
+        conceptName,
+        concept
+      };
+    }
+  }
+
+  return null;
+}
+
+
+function getFactsFromUnits(
+  concept,
+  preferredUnits
+) {
+  const units =
+    concept?.units;
+
+  if (!units) {
+    return {
+      unit: null,
+      facts: []
+    };
+  }
+
+
+  for (
+    const preferredUnit
+    of preferredUnits
+  ) {
+    if (
+      Array.isArray(
+        units[preferredUnit]
+      )
+    ) {
+      return {
+        unit: preferredUnit,
+        facts:
+          units[preferredUnit]
+      };
+    }
+  }
+
+
+  const fallbackUnit =
+    Object.keys(units)[0];
+
+  if (!fallbackUnit) {
+    return {
+      unit: null,
+      facts: []
+    };
+  }
+
+
+  return {
+    unit: fallbackUnit,
+    facts:
+      Array.isArray(
+        units[fallbackUnit]
+      )
+        ? units[fallbackUnit]
+        : []
+  };
+}
+
+
+function normalizeFact(
+  fact,
+  concept,
+  unit
+) {
+  if (!fact) {
+    return null;
+  }
+
+  return {
+    value:
+      fact.val ?? null,
+
+    unit,
+
+    concept,
+
+    start:
+      fact.start ?? null,
+
+    end:
+      fact.end ?? null,
+
+    fiscalYear:
+      fact.fy ?? null,
+
+    fiscalPeriod:
+      fact.fp ?? null,
+
+    form:
+      fact.form ?? null,
+
+    filed:
+      fact.filed ?? null,
+
+    accessionNumber:
+      fact.accn ?? null
+  };
+}
+
+
+/* =========================================
+   ANNUAL FACT SELECTION
+   ========================================= */
+
+function findLatestAnnualFact(
+  companyFacts,
+  conceptNames,
+  preferredUnits
+) {
+  for (
+    const conceptName
+    of conceptNames
+  ) {
+    const result =
+      getConcept(
+        companyFacts,
+        [conceptName]
+      );
+
+    if (!result) {
+      continue;
+    }
+
+
+    const {
+      unit,
+      facts
+    } =
+      getFactsFromUnits(
+        result.concept,
+        preferredUnits
+      );
+
+
+    const candidates =
+      facts
+        .filter((fact) => {
+          return (
+            isAnnualForm(
+              fact.form
+            ) &&
+            fact.fp === "FY" &&
+            fact.end
+          );
+        })
+        .sort(
+          compareFactsNewestFirst
+        );
+
+
+    if (candidates.length > 0) {
+      return normalizeFact(
+        candidates[0],
+        conceptName,
+        unit
+      );
+    }
+  }
+
+
+  return null;
+}
+
+
+function findFactForAnnualPeriod(
+  companyFacts,
+  conceptNames,
+  preferredUnits,
+  periodEnd
+) {
+  if (!periodEnd) {
+    return null;
+  }
+
+
+  for (
+    const conceptName
+    of conceptNames
+  ) {
+    const result =
+      getConcept(
+        companyFacts,
+        [conceptName]
+      );
+
+    if (!result) {
+      continue;
+    }
+
+
+    const {
+      unit,
+      facts
+    } =
+      getFactsFromUnits(
+        result.concept,
+        preferredUnits
+      );
+
+
+    const candidates =
+      facts
+        .filter((fact) => {
+          return (
+            isAnnualForm(
+              fact.form
+            ) &&
+            fact.end === periodEnd
+          );
+        })
+        .sort(
+          (a, b) => {
+            return String(
+              b.filed ?? ""
+            ).localeCompare(
+              String(
+                a.filed ?? ""
+              )
+            );
+          }
+        );
+
+
+    if (candidates.length > 0) {
+      return normalizeFact(
+        candidates[0],
+        conceptName,
+        unit
+      );
+    }
+  }
+
+
+  return null;
+}
+
+
+/* =========================================
+   FUNDAMENTALS
+   ========================================= */
+
+function buildAnnualFundamentals(
+  companyFacts
+) {
+  /*
+    Revenue is used as the anchor so all
+    other metrics come from the same
+    fiscal-year end.
+  */
+
+  const revenue =
+    findLatestAnnualFact(
+      companyFacts,
+
+      [
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "Revenues",
+        "SalesRevenueNet"
+      ],
+
+      ["USD"]
+    );
+
+
+  if (!revenue) {
+    return null;
+  }
+
+
+  const periodEnd =
+    revenue.end;
+
+
+  const netIncome =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "NetIncomeLoss"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const dilutedEPS =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "EarningsPerShareDiluted"
+      ],
+
+      [
+        "USD/shares"
+      ],
+
+      periodEnd
+    );
+
+
+  const assets =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "Assets"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const liabilities =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "Liabilities"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const equity =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "StockholdersEquity",
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const cash =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "CashAndCashEquivalentsAtCarryingValue",
+        "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const operatingCashFlow =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "NetCashProvidedByUsedInOperatingActivities"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  const capitalExpenditures =
+    findFactForAnnualPeriod(
+      companyFacts,
+
+      [
+        "PaymentsToAcquirePropertyPlantAndEquipment"
+      ],
+
+      ["USD"],
+
+      periodEnd
+    );
+
+
+  let freeCashFlow =
+    null;
+
+
+  if (
+    operatingCashFlow &&
+    capitalExpenditures &&
+    Number.isFinite(
+      Number(
+        operatingCashFlow.value
+      )
+    ) &&
+    Number.isFinite(
+      Number(
+        capitalExpenditures.value
+      )
+    )
+  ) {
+    freeCashFlow = {
+      value:
+        Number(
+          operatingCashFlow.value
+        ) -
+        Math.abs(
+          Number(
+            capitalExpenditures.value
+          )
+        ),
+
+      unit: "USD",
+
+      derived: true,
+
+      formula:
+        "Operating Cash Flow - Capital Expenditures",
+
+      end:
+        periodEnd
+    };
+  }
+
+
+  return {
+    fiscalYear:
+      revenue.fiscalYear,
+
+    periodEnd,
+
+    filed:
+      revenue.filed,
+
+    form:
+      revenue.form,
+
+    revenue,
+
+    netIncome,
+
+    dilutedEPS,
+
+    assets,
+
+    liabilities,
+
+    equity,
+
+    cash,
+
+    operatingCashFlow,
+
+    capitalExpenditures,
+
+    freeCashFlow
+  };
+}
+
+
+/* =========================================
+   ROUTE: COMPANY
    ========================================= */
 
 async function handleCompanyLookup(
@@ -226,64 +773,140 @@ async function handleCompanyLookup(
   }
 
 
-  try {
-    const company =
-      await findSecCompany(
-        symbol,
-        env
-      );
-
-
-    if (!company) {
-      return jsonResponse(
-        {
-          error:
-            "Company not found."
-        },
-        404
-      );
-    }
-
-
-    return jsonResponse(
-      {
-        ok: true,
-        company
-      },
-      200,
-      "public, max-age=3600"
-    );
-  }
-
-  catch (error) {
-    console.error(
-      "SEC lookup error:",
-      error
+  const company =
+    await findSecCompany(
+      symbol,
+      env
     );
 
 
-    if (
-      error.message ===
-      "SEC_USER_AGENT_NOT_CONFIGURED"
-    ) {
-      return jsonResponse(
-        {
-          error:
-            "SEC data source is not configured."
-        },
-        503
-      );
-    }
-
-
+  if (!company) {
     return jsonResponse(
       {
         error:
-          "Unable to retrieve company data."
+          "Company not found."
       },
-      502
+      404
     );
   }
+
+
+  return jsonResponse(
+    {
+      ok: true,
+      company
+    },
+    200,
+    "public, max-age=3600"
+  );
+}
+
+
+/* =========================================
+   ROUTE: FUNDAMENTALS
+   ========================================= */
+
+async function handleFundamentals(
+  request,
+  env
+) {
+  const url =
+    new URL(request.url);
+
+  const symbol =
+    normalizeTicker(
+      url.searchParams.get("symbol")
+    );
+
+
+  if (!symbol) {
+    return jsonResponse(
+      {
+        error:
+          "A ticker symbol is required."
+      },
+      400
+    );
+  }
+
+
+  if (!TICKER_PATTERN.test(symbol)) {
+    return jsonResponse(
+      {
+        error:
+          "Invalid ticker symbol."
+      },
+      400
+    );
+  }
+
+
+  const company =
+    await findSecCompany(
+      symbol,
+      env
+    );
+
+
+  if (!company) {
+    return jsonResponse(
+      {
+        error:
+          "Company not found."
+      },
+      404
+    );
+  }
+
+
+  const companyFacts =
+    await fetchCompanyFacts(
+      company.cik,
+      env
+    );
+
+
+  const annual =
+    buildAnnualFundamentals(
+      companyFacts
+    );
+
+
+  if (!annual) {
+    return jsonResponse(
+      {
+        error:
+          "Annual financial data is unavailable for this company."
+      },
+      404
+    );
+  }
+
+
+  return jsonResponse(
+    {
+      ok: true,
+
+      company,
+
+      fundamentals: {
+        annual
+      },
+
+      source: {
+        provider:
+          "SEC EDGAR",
+
+        dataset:
+          "Company Facts",
+
+        type:
+          "Reported financial statements"
+      }
+    },
+    200,
+    "public, max-age=21600"
+  );
 }
 
 
@@ -313,37 +936,80 @@ export default {
     }
 
 
-    if (
-      url.pathname ===
-      "/api/health"
-    ) {
+    try {
+      if (
+        url.pathname ===
+        "/api/health"
+      ) {
+        return jsonResponse(
+          {
+            ok: true,
+            service:
+              "ai-stocks-api"
+          }
+        );
+      }
+
+
+      if (
+        url.pathname ===
+        "/api/company"
+      ) {
+        return await handleCompanyLookup(
+          request,
+          env
+        );
+      }
+
+
+      if (
+        url.pathname ===
+        "/api/fundamentals"
+      ) {
+        return await handleFundamentals(
+          request,
+          env
+        );
+      }
+
+
       return jsonResponse(
         {
-          ok: true,
-          service:
-            "ai-stocks-api"
-        }
+          error:
+            "API route not found."
+        },
+        404
       );
     }
 
+    catch (error) {
+      console.error(
+        "API error:",
+        error
+      );
 
-    if (
-      url.pathname ===
-      "/api/company"
-    ) {
-      return handleCompanyLookup(
-        request,
-        env
+
+      if (
+        error.message ===
+        "SEC_USER_AGENT_NOT_CONFIGURED"
+      ) {
+        return jsonResponse(
+          {
+            error:
+              "SEC data source is not configured."
+          },
+          503
+        );
+      }
+
+
+      return jsonResponse(
+        {
+          error:
+            "Unable to retrieve financial data."
+        },
+        502
       );
     }
-
-
-    return jsonResponse(
-      {
-        error:
-          "API route not found."
-      },
-      404
-    );
   }
 };
