@@ -703,19 +703,19 @@ function buildAnnualPeriod(
       periodEnd
     );
 
+const capitalExpenditures =
+  findFactForAnnualPeriod(
+    companyFacts,
 
-  const capitalExpenditures =
-    findFactForAnnualPeriod(
-      companyFacts,
+    [
+      "PaymentsToAcquirePropertyPlantAndEquipment",
+      "PaymentsToAcquireProductiveAssets"
+    ],
 
-      [
-        "PaymentsToAcquirePropertyPlantAndEquipment"
-      ],
+    ["USD"],
 
-      ["USD"],
-
-      periodEnd
-    );
+    periodEnd
+  );
 
 
   let freeCashFlow =
