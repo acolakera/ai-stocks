@@ -1219,6 +1219,7 @@ function renderAnalysisLoading() {
   renderFactors(
     null
   );
+  hideMethodology();
 }
 
 
@@ -1284,6 +1285,7 @@ function renderAnalysisUnavailable() {
   renderFactors(
     null
   );
+  hideMethodology();
 }
 
 
@@ -1292,7 +1294,8 @@ function renderAnalysisUnavailable() {
    ========================================= */
 
 function renderLiveAnalysis(
-  analysis
+  analysis,
+  scoring
 ) {
   getElement(
     "aiScore"
@@ -1360,9 +1363,15 @@ function renderLiveAnalysis(
   );
 
 
-  renderFactors(
-    analysis.factors
-  );
+renderFactors(
+  analysis.factors
+);
+
+
+renderMethodology(
+  analysis,
+  scoring
+);
 }
 
 
@@ -1387,9 +1396,10 @@ async function loadAnalysis(
     }
 
 
-    renderLiveAnalysis(
-      response.analysis
-    );
+renderLiveAnalysis(
+  response.analysis,
+  response.scoring
+);
   }
 
   catch (error) {
