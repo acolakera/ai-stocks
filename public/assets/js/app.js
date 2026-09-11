@@ -1828,6 +1828,9 @@ renderMethodology(
   analysis,
   scoring
 );
+  renderFactorDetails(
+  scoring
+);
 }
 
 
