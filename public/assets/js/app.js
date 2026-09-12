@@ -2324,9 +2324,13 @@ function playIntro() {
     );
 
 
-  if (!intro) {
-    return;
-  }
+if (!intro) {
+  document.body.classList.remove(
+    "intro-pending"
+  );
+
+  return;
+}
 
 
   const reducedMotion =
@@ -2385,22 +2389,27 @@ function playIntro() {
 
       window.setTimeout(
         () => {
-          intro.hidden =
-            true;
+intro.hidden =
+  true;
 
-          intro.setAttribute(
-            "aria-hidden",
-            "true"
-          );
+intro.setAttribute(
+  "aria-hidden",
+  "true"
+);
 
-          intro.classList.remove(
-            "is-active",
-            "is-exiting"
-          );
+intro.classList.remove(
+  "is-active",
+  "is-exiting"
+);
 
 
-          document.body.style.overflow =
-            previousOverflow;
+document.body.classList.remove(
+  "intro-pending"
+);
+
+
+document.body.style.overflow =
+  previousOverflow;
         },
         reducedMotion
           ? 0
