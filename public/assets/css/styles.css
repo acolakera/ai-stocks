@@ -1932,7 +1932,13 @@ a:focus-visible {
 /* =========================================
    V2.5 — INTRO EXPERIENCE
    ========================================= */
+body.intro-pending {
+  overflow: hidden;
+}
 
+.intro-screen[hidden] {
+  display: none;
+}
 .intro-screen {
   position: fixed;
   inset: 0;
@@ -1956,7 +1962,7 @@ a:focus-visible {
       #05070a 100%
     );
 
-  opacity: 0;
+  opacity: 1;
 
   transition:
     opacity 520ms ease;
