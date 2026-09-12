@@ -2313,12 +2313,109 @@ function setupPeriodButtons() {
     );
 }
 
+/* =========================================
+   INTRO EXPERIENCE
+   ========================================= */
 
+function playIntro() {
+  const intro =
+    document.getElementById(
+      "introScreen"
+    );
+
+
+  if (!intro) {
+    return;
+  }
+
+
+  const reducedMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+
+  const previousOverflow =
+    document.body.style.overflow;
+
+
+  document.body.style.overflow =
+    "hidden";
+
+
+  intro.hidden =
+    false;
+
+  intro.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+
+  /*
+    Two animation frames ensure the browser
+    paints the initial hidden state before
+    the active animation begins.
+  */
+  requestAnimationFrame(
+    () => {
+      requestAnimationFrame(
+        () => {
+          intro.classList.add(
+            "is-active"
+          );
+        }
+      );
+    }
+  );
+
+
+  const visibleDuration =
+    reducedMotion
+      ? 500
+      : 1900;
+
+
+  window.setTimeout(
+    () => {
+      intro.classList.add(
+        "is-exiting"
+      );
+
+
+      window.setTimeout(
+        () => {
+          intro.hidden =
+            true;
+
+          intro.setAttribute(
+            "aria-hidden",
+            "true"
+          );
+
+          intro.classList.remove(
+            "is-active",
+            "is-exiting"
+          );
+
+
+          document.body.style.overflow =
+            previousOverflow;
+        },
+        reducedMotion
+          ? 0
+          : 540
+      );
+    },
+    visibleDuration
+  );
+}
 /* =========================================
    INITIALIZATION
    ========================================= */
 
 async function initializeApp() {
+  playIntro();
   try {
     const api =
       await import(
