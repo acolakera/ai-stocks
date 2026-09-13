@@ -2453,9 +2453,7 @@ async function initializeApp() {
     setupPeriodButtons();
 
 
-    renderStock(
-      DEFAULT_TICKER
-    );
+
   }
 
   catch (error) {
