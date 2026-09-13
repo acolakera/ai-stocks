@@ -19,7 +19,7 @@
 
   "routes": [
     {
-      "pattern": "stocks.ardacolaker.com",
+      "pattern": "monetarium.ardacolaker.com",
       "custom_domain": true
     }
   ]
