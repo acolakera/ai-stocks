@@ -2024,7 +2024,14 @@ function renderStock(ticker) {
   if (!stock) {
     return false;
   }
+ const dashboard =
+  getElement(
+    "dashboard"
+  );
 
+
+dashboard.hidden =
+  false;
 
   activeTicker =
     ticker;
